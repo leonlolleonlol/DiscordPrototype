@@ -1,0 +1,16 @@
+
+
+You are implementing a versatile communication platform for seamless interaction through text channels and direct messaging (e.g., similar to Discord or Slack). Whether you’re collaborating with a team, connecting with a community, or chatting privately with friends, the platform offers an intuitive and organized space to stay connected. Users can create topic-specific channels, share media, and engage in one-on-one conversations, all while enjoying customizable features that enhance the experience. With a clean interface and robust privacy options, the platform is the perfect hub for meaningful and efficient communication.
+ 
+You need to implement the following three core features (need to be broken down into user stories):
+ 
+Text Channels for Group Communication
+Users can join a set of channels (e.g., "General," "Project Help," "Social").
+Messages sent in a channel are visible to all users in that channel.
+Direct Messaging Between Users  
+Users can join a predefined set of channels (e.g., "General," "Project Help," "Social").
+Role-Based User Permissions
+Two roles: Admin and Member.
+Admins can create/delete channels and moderate messages (delete inappropriate ones).
+Members can only send and view messages.
+In addition to these three core features, you need to propose one feature with your TA. You are free to use any programming language or framework for the project. 
