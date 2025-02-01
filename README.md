@@ -10,7 +10,7 @@ This project aims to develop a dynamic communication platform that facilitates s
 | ----------------- | -------------- | --------------- |
 | Ammar Ranko       | 40281232       | ammarranko      |
 | Ryan Cheung       | 40282200       | RyanCheung03    |
-| Matthew Leprohon  | 40283413       |                 |
+| Matthew Leprohon  | 40283413       | mattlep11       |
 | Leon Kojakian     | 40282267       |                 |
 | German Shevchenko | 40246785       |                 |
 | Massimo Paolini   | 40280323       |                 |
@@ -33,7 +33,10 @@ This project aims to develop a dynamic communication platform that facilitates s
 ### 3. Role-Based User Permissions
 
 - **Admin Role:**
-  - Can create and delete channels.
+  - Can create and delete group chat channels.
+  - Can modify the permissions of existing users by making them into admins.
+  - Can discipline users by muting or banning them from the server.
+  - Can modify the group chat's settings (i.e. profile picture, chat name, etc.)
   - Can moderate messages by deleting inappropriate content.
 - **Member Role:**
   - Can join and participate in channels.
