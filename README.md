@@ -20,9 +20,10 @@ This project aims to develop a dynamic communication platform that facilitates s
 
 ### 1. Text Channels for Group Communication
 
-- Users can join a predefined set of channels (e.g., "General," "Project Help," "Social").
+- Users can create, join and leave a predefined set of channels (e.g., "General," "Project Help," "Social").
 - Messages sent in a channel are visible to all users in that channel.
 - Users can post, edit, and delete their messages.
+- Users can mention/tag other users in the channel.
 
 ### 2. Direct Messaging Between Users
 
