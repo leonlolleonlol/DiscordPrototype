@@ -14,7 +14,7 @@ This project aims to develop a dynamic communication platform that facilitates s
 | Leon Kojakian     | 40282267       | leonlolleonlol  |
 | German Shevchenko | 40246785       |                 |
 | Massimo Paolini   | 40280323       |                 |
-| Peter Rentopoulos | 40123208       |                 |
+| Peter Rentopoulos | 40123208       | beterbuilds     |
 
 ## Core Features
 
