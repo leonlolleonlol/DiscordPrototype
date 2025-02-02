@@ -12,8 +12,8 @@ This project aims to develop a dynamic communication platform that facilitates s
 | Ryan Cheung       | 40282200       | RyanCheung03    |
 | Matthew Leprohon  | 40283413       | mattlep11       |
 | Leon Kojakian     | 40282267       | leonlolleonlol  |
-| German Shevchenko | 40246785       |                 |
-| Massimo Paolini   | 40280323       |                 |
+| German Shevchenko | 40246785       | gShevc          |
+| Massimo Paolini   | 40280323       | MassPaol        |
 | Peter Rentopoulos | 40123208       | beterbuilds     |
 
 ## Core Features
