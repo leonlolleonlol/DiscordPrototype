@@ -1,7 +1,9 @@
+
+import {Button} from "@/components/ui/button"
 const Chat = () => {
     return (
       <div>
-        Chat
+        <Button>Click me </Button>
       </div>
     )
   }
