@@ -1,10 +1,10 @@
-import React from 'react'
+import React from 'react';
 // Import routing components from react-router-dom
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 // Import the page components that correspond to each route
-import Auth from "./pages/auth"
-import Chat from "./pages/chat"
-import Profile from "./pages/profile"
+import Auth from "./pages/auth";
+import Chat from "./pages/chat";
+import Profile from "./pages/profile";
 
 const App = () => {
   return (
@@ -26,6 +26,6 @@ const App = () => {
       </Routes>
     </BrowserRouter>
   )
-}
+};
 
 export default App;
