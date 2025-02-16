@@ -1,11 +1,14 @@
 
-import {Button} from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+
 const Chat = () => {
-    return (
-      <div>
-        <Button>Click me </Button>
-      </div>
-    )
-  }
+  return (
+    <div>
+      Chat
+      <Button>Click Me</Button>
+    </div>
+    
+  )
+}
   
 export default Chat;
