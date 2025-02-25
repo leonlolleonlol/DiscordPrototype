@@ -15,7 +15,7 @@ async function postAuth(dest, param) {
     const resp = await clientRequest.post(dest, param);
     console.log(resp.data.message);
 
-    return resp.status === 200;
+    return resp.status === 200 ? resp.data.user : false;
   }
   catch (err) {
     let status = err.response;

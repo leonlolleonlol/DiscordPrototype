@@ -1,5 +1,6 @@
 import { Router } from "express";
 import userModel from "./models/user.js";
+import { signSendJWT } from "./security.js";
 
 export const router = new Router();
 
@@ -30,9 +31,19 @@ router.post('/auth/signin', async (req, res) => {
 
     /* sign JWT token */
     /* send JWT token to user via secure cookie */
+    signSendJWT(res, { id: user._id, email: user.email});
+
+    // user data returned to client
+    const userData = {
+      id: user._id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      avatar: user.avatar,
+    };
 
     // sign-in successful
-    res.status(200).json({ message: "Sign-in successful." });
+    res.status(200).json({ message: "Sign-in successful.", user: userData });
 
   } catch (err) {
     console.log(err.message);
@@ -79,8 +90,16 @@ router.post('/auth/signup', async (req, res) => {
       /* open new user session - sign JWT token */
       /* send JWT token to user as a secure cookie */
 
+      signSendJWT(res, { id: user._id, email: user.email});
+
+      // known user data returned to client
+      const userData = {
+        id: user._id,
+        email: user.email,
+      };
+
       // sign up successful
-      res.status(200).json({ message: "Sign-up successful." });
+      res.status(200).json({ message: "Sign-up successful.", user: userData });
     }
     catch (err) {
       console.log(err.message);

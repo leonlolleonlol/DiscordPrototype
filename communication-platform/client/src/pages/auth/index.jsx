@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from 'react';
 import { handleLogin, handleSignup } from './auth';
 import { useNavigate } from "react-router-dom";
+import { useUserStore } from '@/lib/store';
 
 const Auth = () => {
   const [email,setEmail] = useState("");
@@ -13,18 +14,25 @@ const Auth = () => {
   const [confirmPassword,setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
+  const { setUserData } = useUserStore();
+
   // redirect the user to the chat landing page if sign-in is successful
   const login = async () => { 
-    let success = await handleLogin(email, password);
-    if (success)
+    let user = await handleLogin(email, password);
+    if (user) {
+      console.log(user);
+      setUserData(user);
       navigate('/chat');
+    }
   }
 
   // redirect the user to the profile creation screen if credentials are valid
   const signup = async () => {
-    let success = await handleSignup(email, password, confirmPassword);
-    if (success)
+    let user = await handleSignup(email, password, confirmPassword);
+    if (user) {
+      setUserData(user);
       navigate('/profile');
+    }
   }
 
   return (
