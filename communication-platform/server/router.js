@@ -1,6 +1,6 @@
 import { Router } from "express";
 import userModel from "./models/user.js";
-import { signSendJWT } from "./security.js";
+import { signSendJWT, verifyJWT } from "./security.js";
 
 export const router = new Router();
 
@@ -29,8 +29,6 @@ router.post('/auth/signin', async (req, res) => {
       return;
     }
 
-    /* sign JWT token */
-    /* send JWT token to user via secure cookie */
     signSendJWT(res, { id: user._id, email: user.email});
 
     // user data returned to client
@@ -87,9 +85,6 @@ router.post('/auth/signup', async (req, res) => {
       await newUser.save();
       console.log(`New user saved: ${email}.`);
 
-      /* open new user session - sign JWT token */
-      /* send JWT token to user as a secure cookie */
-
       signSendJWT(res, { id: user._id, email: user.email});
 
       // known user data returned to client
@@ -110,4 +105,30 @@ router.post('/auth/signup', async (req, res) => {
     console.log(err.message);
     res.status(500).json({ message: 'Something went wrong with the server. Please try again later.' });
   }
+});
+
+router.get('/profile/data', async (req, res) => {
+  const id = await verifyJWT(req, res);
+
+  if (!id) {
+    res.status(400).json({ message: 'User is not authenticated' });
+    return;
+  }
+
+  const user = await userModel.findById(id);
+  
+  if (user) {
+    // user data returned to client
+    const userData = {
+      id: user._id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      avatar: user.avatar,
+    };
+
+    res.status(200).json({ message: "User session found.", user: userData });
+  }
+  else
+    res.status(404).json({ message: "User ID not found in database."});
 });

@@ -1,8 +1,6 @@
 import { toast } from "sonner";
-import axios from "axios";
+import { clientRequest } from "@/lib/utils";
 
-// axios object to send requests to the server
-const clientRequest = axios.create({baseURL: import.meta.env.VITE_SERVER_URL});
 const SUP_ROUTE = "auth/signup";
 const SIN_ROUTE = "auth/signin";
 
@@ -13,8 +11,6 @@ const EMAIL_PATTERN = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/;
 async function postAuth(dest, param) {
   try {
     const resp = await clientRequest.post(dest, param);
-    console.log(resp.data.message);
-
     return resp.status === 200 ? resp.data.user : false;
   }
   catch (err) {
