@@ -20,7 +20,12 @@ const Auth = () => {
       navigate('/chat');
   }
 
-  const signup = async () => {}
+  // redirect the user to the profile creation screen if credentials are valid
+  const signup = async () => {
+    let success = await handleSignup(email, password, confirmPassword);
+    if (success)
+      navigate('/profile');
+  }
 
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">

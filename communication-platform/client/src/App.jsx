@@ -22,7 +22,7 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
 
         {/* Wildcard route that catches all undefined routes and redirects to '/chat' */}
-        <Route path="*" element={<Navigate to="/chat" />} />
+        <Route path="*" element={<Navigate to="/auth" />} />
       </Routes>
     </BrowserRouter>
   )
