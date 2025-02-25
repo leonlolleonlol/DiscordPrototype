@@ -3,11 +3,13 @@ import cors from "cors"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
 import cookieParser from "cookie-parser"
+import { router } from "./router.js";
 
 //load environment variables from .env
 dotenv.config();
 
 const app = express();
+
 // Host on predefined Port in .env. In case it is not available, host on 3000
 const port = process.env.PORT ||3001
 const dbURL = process.env.DB_URL
@@ -21,11 +23,13 @@ app.use(cors({
 app.use(cookieParser())
 app.use(express.json())
 
-const server = app.listen(port, ()=>{
-    console.log(`Server is running at ${port}`);
-})
-
 // connect database
 mongoose.connect(dbURL)
   .then(() => console.log("DB connected successfully"))
   .catch((err) => console.error("DB connection error:", err));
+
+app.use('/', router);
+
+const server = app.listen(port, ()=>{
+    console.log(`Server is running at ${port}`);
+})
