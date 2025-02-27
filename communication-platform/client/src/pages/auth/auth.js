@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { clientRequest } from "@/lib/utils";
+import { fieldsNotEmpty, validatePassword } from "~/validation.js"
 
 const SUP_ROUTE = "auth/signup";
 const SIN_ROUTE = "auth/signin";
@@ -30,7 +31,7 @@ async function postAuth(dest, param) {
 // perform client-side verification on user input and post the server for signin
 export const handleLogin = async (email, password) => {
   // verify fields are non-empty
-  if (email.length === 0 || password.length === 0) {
+  if (!fieldsNotEmpty(email, password)) {
     toast.error("You must enter an email and password.");
     return false;
   }
@@ -40,9 +41,9 @@ export const handleLogin = async (email, password) => {
 };
 
 // perform client-side verification on user input and post the server for signup
-export const handleSignup = async (email, password, confirm) => {
+export const handleSignup = async (avatarId, fName, lName, email, password, confirm) => {
   // verify fields are non-empty
-  if (email.length === 0 || password.length === 0 || confirm.length === 0) {
+  if (!fieldsNotEmpty(fName, lName, email, password, confirm)) {
     toast.error("Please fill all fields to continue.");
     return false;
   }
@@ -51,12 +52,18 @@ export const handleSignup = async (email, password, confirm) => {
     toast.error("Invalid email address format (email@address.dom).");
     return false;
   }
+  if (!validatePassword(password)) {
+    toast.error("Password does not meet criteria.");
+    return false;
+  }
   // passwords match
   if (password !== confirm) {
     toast.error("Passwords do not match.");
     return false;
   }
 
+  const payload = { avatarId, fName, lName, email, password, confirm };
+
   // post request to the server to authenticate sign-up credentials
-  return postAuth(SUP_ROUTE, { email, password, confirm });
+  return postAuth(SUP_ROUTE, payload);
 };

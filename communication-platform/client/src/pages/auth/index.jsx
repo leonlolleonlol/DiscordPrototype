@@ -33,7 +33,7 @@ const Auth = () => {
 
   // redirect the user to the profile creation screen if credentials are valid
   const signup = async () => {
-    let user = await handleSignup(email, password, confirmPassword);
+    let user = await handleSignup(sliderValue, firstName, lastName, email, password, confirmPassword);
     if (user) {
       setUserData(user);
       navigate('/profile');
@@ -113,6 +113,9 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                <br />
+                <h3>Password Criteria:</h3>
+                <p>10 or more characters, at least one number, symbol, and uppercase letter.</p>
                 <Input
                   placeholder="Password"
                   type="password"

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import userModel from "./models/user.js";
 import { signSendJWT, verifyJWT } from "./security.js";
+import { fieldsNotEmpty, validatePassword } from "../shared/validation.js";
 
 export const router = new Router();
 
@@ -14,7 +15,7 @@ router.post('/auth/signin', async (req, res) => {
     const { email, password } = req.body;
 
     // redo input validation on the server side
-    if (email.length === 0 || password.length === 0) {
+    if (!fieldsNotEmpty(email, password)) {
       res.status(400).json({ message: "An email and password are required to sign-in." });
       return;
     }
@@ -38,6 +39,9 @@ router.post('/auth/signin', async (req, res) => {
       firstname: user.firstname,
       lastname: user.lastname,
       avatar: user.avatar,
+      status: 'online',
+      friends: user.friends,
+      role: user.role
     };
 
     // sign-in successful
@@ -51,46 +55,63 @@ router.post('/auth/signin', async (req, res) => {
 
 router.post('/auth/signup', async (req, res) => {
   try {
-    const { email, password, confirm } = req.body;
+    const { avatarId, fName, lName, email, password, confirm } = req.body;
+    let ok = true;
+    let message = "Sign-up successful.";
     
     // redo input validation on the server side
-    if (email.length === 0 || password.length === 0 || confirm.length === 0) {
-      res.status(400).json({ message: "All fields must be filled." });
-      return;
+    if (!fieldsNotEmpty(avatarId, fName, lName, email, password, confirm)) {
+      ok = false;
+      message = "All fields must be filled.";
     }
-    if (!EMAIL_PATTERN.test(email)) {
-      res.status(400).json({ message: "Invalid email address format (email@address.dom)." });
-      return;
+    else if (!EMAIL_PATTERN.test(email)) {
+      ok = false;
+      message = "Invalid email address format (email@address.dom)."
     }
-    if (password !== confirm) {
-      res.status(400).json({ message: "Passwords do not match." });
-      return;
+    else if (!validatePassword(password)) {
+      ok = false;
+      message = "Password does not meet criteria.";
+    }
+    else if (password !== confirm) {
+      ok = false;
+      message = "Passwords do not match.";
     }
     
+    // if sign-up fails, return a status message
+    if (!ok)
+      res.status(400).json({ message: message });
+
     // verify the email isn't already in use by another account
     const user = await userModel.findOne({ email: email.toLowerCase() });
-    if (user) {
-      res.status(400).json({ message: "Email is already in use." });
-      return;
-    }
+    if (user)
+      return res.status(400).json({ message: "Email is already in use." });
 
     /* hash password before adding to the db for added security */
 
     const newUser = new userModel({
+      avatar: avatarId,
+      firstname: fName,
+      lastname: lName,
       email: email,
-      password: password
+      password: password,
     });
 
     try {
       await newUser.save();
       console.log(`New user saved: ${email}.`);
 
-      signSendJWT(res, { id: user._id, email: user.email});
+      signSendJWT(res, { id: newUser._id, email: newUser.email});
 
       // known user data returned to client
       const userData = {
-        id: user._id,
-        email: user.email,
+        id: newUser._id,
+        avatarId, 
+        firstName: fName,
+        lastName: lName,
+        email,
+        status: 'online',
+        friends: [],
+        role: 'user'
       };
 
       // sign up successful
