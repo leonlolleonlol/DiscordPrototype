@@ -9,6 +9,7 @@ import mongoose from "mongoose"
     status: { type: String, enum: ['online', 'offline', 'away'], default: 'offline' },
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Friend list
     role: { type: String, enum: ['user', 'admin'], default: 'user' }, // Role-based access control
+    nbSessions: { type: Number, default: 0 } // number of sign ins
 });
 
 const userModel= mongoose.model("users",userSchema)

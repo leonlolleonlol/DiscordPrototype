@@ -9,7 +9,7 @@ const Chat = () => {
     email = userData.email;
     fname = userData.firstName;
     lname = userData.lastName;
-    avatarId = userData.avatarId;
+    avatarId = userData.avatar;
   }
 
   return (
