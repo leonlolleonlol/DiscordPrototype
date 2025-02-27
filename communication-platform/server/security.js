@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 // signs a payload of data and sends it as a JWT-AUTH cookie
-export function signSendJWT(response, payload) {
+function signSendJWT(response, payload) {
   const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: 10800000 });
 
   response.cookie("jwt-auth", token, {
@@ -10,7 +11,7 @@ export function signSendJWT(response, payload) {
 }
 
 // verifies that the JWT token exists and extracts the user's id
-export async function verifyJWT(request) {
+async function verifyJWT(request) {
   const token = request.cookies['jwt-auth'];
   if (!token)
     return false;
@@ -25,3 +26,23 @@ export async function verifyJWT(request) {
 
   return id;
 }
+
+// creates a hash for the password and assigns it to the userModel
+async function hashPassword(pass) {
+  return bcrypt.hash(pass, Number(process.env.SALT_ROUNDS))
+    .catch(err => {
+      console.log("Failed securing password: " + err.message);
+      return false;
+    });
+}
+
+// compares the plain text password with the hash to ensure they match
+async function verifyPasswordHash(pass, hash) {
+  return bcrypt.compare(pass, hash)
+    .catch(err => {
+      console.log("Failed comparing passwords: " + err.message);
+      return undefined;
+    })
+}
+
+export { signSendJWT, verifyJWT, hashPassword, verifyPasswordHash };

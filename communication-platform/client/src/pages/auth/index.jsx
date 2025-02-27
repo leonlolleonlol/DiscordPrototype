@@ -25,7 +25,6 @@ const Auth = () => {
   const login = async () => {
     let user = await handleLogin(email, password);
     if (user) {
-      console.log(user);
       setUserData(user);
       navigate('/chat');
     }

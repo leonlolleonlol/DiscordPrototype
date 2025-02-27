@@ -1,6 +1,6 @@
 import { Router } from "express";
 import userModel from "./models/user.js";
-import { signSendJWT, verifyJWT } from "./security.js";
+import { hashPassword, signSendJWT, verifyJWT, verifyPasswordHash } from "./security.js";
 import { fieldsNotEmpty, validatePassword } from "../shared/validation.js";
 
 export const router = new Router();
@@ -15,20 +15,20 @@ router.post('/auth/signin', async (req, res) => {
     const { email, password } = req.body;
 
     // redo input validation on the server side
-    if (!fieldsNotEmpty(email, password)) {
-      res.status(400).json({ message: "An email and password are required to sign-in." });
-      return;
-    }
+    if (!fieldsNotEmpty(email, password))
+      return res.status(400).json({ message: "An email and password are required to sign-in." });
     
     // query to check if the email exists and passwords match
     const user = await userModel.findOne({ email: email.toLowerCase() });
+    if (!user)
+      return res.status(400).json({ message: "Invalid email address." });
 
-    /* check password against hashed password in db if user exists */
-
-    if (!user || password !== user.password) {
-      res.status(400).json({ message: "Invalid email or password." });
-      return;
-    }
+    // verify password matches against the hash stored in the database
+    const passMatches = await verifyPasswordHash(password, user.password);
+    if (passMatches == undefined)
+      return res.status(500).json({ message: "Failed to authenticate password, please try again later." });
+    else if (!passMatches)
+      return res.status(400).json({ message: "Password is incorrect." });
 
     signSendJWT(res, { id: user._id, email: user.email});
 
@@ -36,8 +36,8 @@ router.post('/auth/signin', async (req, res) => {
     const userData = {
       id: user._id,
       email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
+      firstName: user.firstname,
+      lastName: user.lastname,
       avatar: user.avatar,
       status: 'online',
       friends: user.friends,
@@ -45,6 +45,7 @@ router.post('/auth/signin', async (req, res) => {
     };
 
     // sign-in successful
+    console.log(`New user successfully signed in: ${email}`);
     res.status(200).json({ message: "Sign-in successful.", user: userData });
 
   } catch (err) {
@@ -86,14 +87,17 @@ router.post('/auth/signup', async (req, res) => {
     if (user)
       return res.status(400).json({ message: "Email is already in use." });
 
-    /* hash password before adding to the db for added security */
+    // hash password before saving the user to the db
+    const hash = await hashPassword(password);
+    if (!hash)
+      return res.status(500).json({ message: "Failed to secure your account. Please try again later." });
 
     const newUser = new userModel({
       avatar: avatarId,
       firstname: fName,
       lastname: lName,
       email: email,
-      password: password,
+      password: hash
     });
 
     try {
