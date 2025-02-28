@@ -1,11 +1,8 @@
 import { Router } from "express";
 import userModel from "./models/user.js";
-import { signSendJWT, verifyJWT } from "./security.js";
+import * as check from "./security.js";
 
 export const router = new Router();
-
-// https://regex101.com/r/lHs2R3/1
-const EMAIL_PATTERN = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/;
 
 // handle http requests to the server
 
@@ -13,88 +10,83 @@ router.post('/auth/signin', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // redo input validation on the server side
-    if (email.length === 0 || password.length === 0) {
-      res.status(400).json({ message: "An email and password are required to sign-in." });
-      return;
-    }
-    
-    // query to check if the email exists and passwords match
-    const user = await userModel.findOne({ email: email.toLowerCase() });
-
-    /* check password against hashed password in db if user exists */
-
-    if (!user || password !== user.password) {
-      res.status(400).json({ message: "Invalid email or password." });
-      return;
+    // server-side input validation to authenticate the sign-in
+    const { status, message, user } = await check.authenticateSignIn(email, password);
+    if (status > 200 || !user) {
+      console.log(`Failed sign-in attempt (${email}): ${message}`);
+      return res.status(status).json({ message: message });
     }
 
-    signSendJWT(res, { id: user._id, email: user.email});
+    check.signSendJWT(res, { id: user._id, email: user.email});
 
     // user data returned to client
     const userData = {
       id: user._id,
       email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
+      firstName: user.firstname,
+      lastName: user.lastname,
       avatar: user.avatar,
+      status: 'online',
+      friends: user.friends,
+      role: user.role
     };
 
     // sign-in successful
-    res.status(200).json({ message: "Sign-in successful.", user: userData });
+    await userModel.updateOne({ _id: user._id }, { $inc: { nbSessions: 1 } });
+    console.log(`New user successfully signed in: ${email}`);
+    res.status(status).json({ message: message, user: userData });
 
   } catch (err) {
     console.log(err.message);
-    res.status(500).json({ message: 'Something went wrong with the server. Please try again later.' });
+    res.status(500).json({ message: "Something went wrong with the server. Please try again later." });
   }
 });
 
 router.post('/auth/signup', async (req, res) => {
   try {
-    const { email, password, confirm } = req.body;
+    const { avatarId, fName, lName, email, password, confirm } = req.body;
     
-    // redo input validation on the server side
-    if (email.length === 0 || password.length === 0 || confirm.length === 0) {
-      res.status(400).json({ message: "All fields must be filled." });
-      return;
-    }
-    if (!EMAIL_PATTERN.test(email)) {
-      res.status(400).json({ message: "Invalid email address format (email@address.dom)." });
-      return;
-    }
-    if (password !== confirm) {
-      res.status(400).json({ message: "Passwords do not match." });
-      return;
-    }
-    
-    // verify the email isn't already in use by another account
-    const user = await userModel.findOne({ email: email.toLowerCase() });
-    if (user) {
-      res.status(400).json({ message: "Email is already in use." });
-      return;
+    let { status, message } = await check.authenticateSignUp(avatarId, fName, lName, email, password, confirm);
+    if (status > 200) {
+      console.log(`Failed sign-up attempt (${email}): ${message}`);
+      return res.status(status).json({ message: message });
     }
 
-    /* hash password before adding to the db for added security */
+    // hash password before saving the user to the db
+    const hash = await check.hashPassword(password);
+    if (!hash) {
+      console.log(`Failed to hash password (${email}).`);
+      return res.status(500).json({ message: "Failed to secure your account, please try again later." });
+    }
 
     const newUser = new userModel({
+      avatar: avatarId,
+      firstname: fName,
+      lastname: lName,
       email: email,
-      password: password
+      password: hash
     });
 
     try {
       await newUser.save();
       console.log(`New user saved: ${email}.`);
 
-      signSendJWT(res, { id: user._id, email: user.email});
+      check.signSendJWT(res, { id: newUser._id, email: newUser.email});
 
       // known user data returned to client
       const userData = {
-        id: user._id,
-        email: user.email,
+        id: newUser._id,
+        avatarId, 
+        firstName: fName,
+        lastName: lName,
+        email,
+        status: 'online',
+        friends: [],
+        role: 'user'
       };
 
       // sign up successful
-      res.status(200).json({ message: "Sign-up successful.", user: userData });
+      res.status(status).json({ message: message, user: userData });
     }
     catch (err) {
       console.log(err.message);
@@ -103,15 +95,15 @@ router.post('/auth/signup', async (req, res) => {
 
   } catch (err) {
     console.log(err.message);
-    res.status(500).json({ message: 'Something went wrong with the server. Please try again later.' });
+    res.status(500).json({ message: "Something went wrong with the server. Please try again later." });
   }
 });
 
 router.get('/profile/data', async (req, res) => {
-  const id = await verifyJWT(req, res);
+  const id = await check.verifyJWT(req, res);
 
   if (!id) {
-    res.status(400).json({ message: 'User is not authenticated' });
+    res.status(400).json({ message: "User is not authenticated." });
     return;
   }
 
