@@ -33,7 +33,7 @@ const App = () => {
       .then((res) => {
         setUserData(res.data.user);
       })
-      .catch((err) => { console.log(err)});
+      .catch((err) => { console.log(err.message)});
     }
 
     if (!userData)
