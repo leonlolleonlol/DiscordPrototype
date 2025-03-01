@@ -3,12 +3,18 @@ import ChatHeader from "./components/chat-header";
 import MessageContainer from "./components/message-container";
 import MessageBar from "./components/message-bar";
 
-const ChatContainer = () => {
+const ChatContainer = ({ email }) => {
   const [messages, setMessages] = useState([]);
 
   // Function to handle new messages
-  const handleNewMessage = (newMessage) => {
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+  const handleNewMessage = (newMessage, email, direction) => {
+    const message = {
+      text: newMessage,
+      email: email,
+      direction: direction,
+    };
+
+    setMessages((prevMessages) => [...prevMessages, message]);
   };
 
   return (
@@ -20,7 +26,7 @@ const ChatContainer = () => {
       <MessageContainer messages={messages} />
 
       {/* Message Input Bar */}
-      <MessageBar onSendMessage={handleNewMessage} />
+      <MessageBar onSendMessage={handleNewMessage} email={email} />
     </div>
   );
 };
