@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Front End
+        run: |
+          cd communication-platform/client
+          npm install
+
+      - name: Build Front End
+        run: |
+          cd communication-platform/client
+          npm run build   
+
+      - name: Test Front End (Placeholder)
+        run: |
+          cd communication-platform/client
+          npm test || echo "No real tests yet"
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Server
+        run: |
+          cd communication-platform/server
+          npm install
+
+      - name: No-Op Build for Server
+        run: |
+          cd communication-platform/server
+          echo "No build step here. 
+          exit 0
+
+      - name: Test Server (Placeholder)
+        run: |
+          cd communication-platform/server
+          npm test || echo "No real tests yet"
