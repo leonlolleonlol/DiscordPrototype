@@ -13,6 +13,10 @@ export const useSocketStore = create((set, get) => ({
   // Function to initialize the socket connection
   connectSocket: (URL, onMessageReceived, roomId) => {
 
+    if (!roomId) {
+      console.error("Cannot connect to socket without roomId");
+      return;
+    }
     const existingSocket = get().socket;
     const currentRoom = get().currentRoom;
     
@@ -51,25 +55,82 @@ export const useSocketStore = create((set, get) => ({
   sendMessage: (message, email, roomId) => {
     const socket = get().socket;
     if (socket) {
-      console.log("📤 Sending message:", { message, email, roomId });
+      console.log("Sending message:", { message, email, roomId });
       socket.emit("send-message",  message, email, roomId );
     }
   },
 }));
 
-export const useMessageStore = create((set) => ({
+export const useMessageStore = create((set, get) => ({
   messages: [],
 
+  // Fetch messages from the database when connecting to a chat
+  fetchMessages: async (roomId) => {
+    if (!roomId) {
+      console.error("Cannot fetch messages without a valid roomId");
+      return;
+    }
+
+    try {
+      console.log(`Fetching messages for room: ${roomId}`);
+
+      const response = await fetch(`http://localhost:3000/api/messages/${roomId}`);
+      const data = await response.json();
+      set({ messages: data }); // Update messages state with DB messages
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    }
+  },
+
   // Function to handle new messages
-  handleNewMessage: (newMessage, senderEmail, direction, roomId) => {
+  handleNewMessage: async (newMessage, senderEmail, direction, roomId) => {
+    console.log("handleNewMessage called:", {newMessage, senderEmail, roomId});
+
     const message = {
-      _id: "filler",
       roomId: roomId,
+      senderId: senderEmail,
       text: newMessage,
-      senderEmail: senderEmail,
       direction: direction,
     };
 
     set((state) => ({ messages : [...state.messages, message]}));
+
+    if (direction === "sender"){
+      try {
+        await fetch("http://localhost:3000/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message),
+        });
+  
+        console.log("Message saved to DB:", message);
+      } catch (error) {
+        console.error("Failed to save message:", error);
+      }
+    }
+    
+  },
+}));
+
+export const useChatRoomStore = create((set, get) => ({
+  chatRooms: [],
+
+  fetchChatRooms: async (email) => {
+    if (!email) return;
+    
+    try {
+      console.log("Fetching chat rooms for:", email);
+
+      const response = await fetch(`http://localhost:3000/api/chatrooms/${email}`);
+      const data = await response.json();
+
+      // console.log("API Response:", JSON.stringify(data, null, 2)); // Log full response
+
+      set({ chatRooms: data });
+      // console.log("Updated Chat Rooms:", JSON.stringify(get().chatRooms, null, 2));
+      
+    } catch (error) {
+      console.error("Failed to fetch chat rooms:", error);
+    }
   }
-}))
+}));

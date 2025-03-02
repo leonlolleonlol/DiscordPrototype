@@ -12,5 +12,5 @@ import mongoose from "mongoose"
     nbSessions: { type: Number, default: 0 } // number of sign ins
 });
 
-const userModel= mongoose.model("users",userSchema)
-export default userModel
+const userModel= mongoose.model("users",userSchema);
+export default userModel;

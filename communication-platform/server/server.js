@@ -5,6 +5,8 @@ import mongoose from "mongoose"
 import cookieParser from "cookie-parser"
 import { router } from "./router.js";
 import { Server } from "socket.io";
+import messageRoutes from "./routes/messageRoutes.js";
+import chatRoomRoutes from "./routes/chatRoomRoutes.js";
 
 //load environment variables from .env
 dotenv.config();
@@ -17,9 +19,9 @@ const dbURL = process.env.DB_URL
 
 // to enable communciation between frontend and server hosted on different VPS
 app.use(cors({
-    origin: [process.env.ORIGIN],
-    methods: ["GET", "POST", "PUT","PATCH", "DELETE"],
-    credentials: true,
+  origin: [process.env.ORIGIN],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true,
 }))
 
 app.use(cookieParser())
@@ -31,10 +33,13 @@ mongoose.connect(dbURL)
   .catch((err) => console.error("DB connection error:", err));
 
 app.use('/', router);
+app.use("/api", messageRoutes)
+app.use("/api", chatRoomRoutes);
 
-const server = app.listen(port, ()=>{
-    console.log(`Server is running at ${port}`);
+const server = app.listen(port, () => {
+  console.log(`Server is running at ${port}`);
 })
+
 
 const io = new Server(server, {
   cors: {
