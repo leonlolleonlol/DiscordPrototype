@@ -33,24 +33,32 @@ const Chat = () => {
     };
   }, []);
 
-  const friends = [
+  // Make shift data
+  const ALL_ROOMS = [
     {
-      email: "massexample@gmail.com",
-      fname: "testMas",
-      lname: "Blah",
-      avatarId: 1,
-      status: "online",
-      socket_id: ""
+      _id: "roomId_1",
+      type: "dm",
+      members: ["george@example.com", "massexample@gmail.com"],
+      createdAt: "2025-03-01T12:00:00Z"
     },
     {
-      email: "george@example.com",
-      fname: "George",
-      lname: "Henry",
-      avatarId: 5,
-      status: "offline",
-      socket_id: ""
+      _id: "roomId_2",
+      type: "dm",
+      members: ["testuser123@example.com", "massexample@gmail.com"],
+      createdAt: "2025-03-01T12:00:00Z"
     },
-  ];
+    {
+      _id: "roomId_3",
+      type: "dm",
+      members: ["george@example.com", "testuser123@example.com"],
+      createdAt: "2025-03-01T12:00:00Z"
+    }
+  ]
+
+  // Make shift data
+  const chatRooms = ALL_ROOMS.filter((room) => {
+    return room.members.find((value) => value === email)
+  })
 
   return (
     <div className="relative h-screen bg-gray-900 text-white flex">
@@ -66,7 +74,7 @@ const Chat = () => {
 
       {/* Chat Sidebar */}
       <div className="w-1/4 h-full bg-gray-800 overflow-y-auto">
-        <ContactsContainer friends={friends} />
+        <ContactsContainer chatRooms={chatRooms} userData={userData} />
       </div>
 
       {/* Chat Area */}

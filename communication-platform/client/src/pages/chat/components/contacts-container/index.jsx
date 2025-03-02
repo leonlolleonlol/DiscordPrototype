@@ -1,54 +1,45 @@
-import { useEffect, useState } from "react";
-import { setupSocket } from '../../socket';
+import { useEffect } from "react";
+import { useSocketStore, useMessageStore } from "../../../../lib/store";
 
-const ContactsContainer = ({ onSendMessage, friends }) => {
-  const [socket, setSocket] = useState(null) // Another updater. 'socket' holds the given socket state and 'setSocket' updates that state.
+const ContactsContainer = ({ chatRooms, userData }) => {
+  const { connectSocket, disconnectSocket, socket } = useSocketStore();
+  const { handleNewMessage } = useMessageStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
-  // Update the socket ID for a friend
-  const updateFriendSocket = (friend, socketId) => {
-    console.log(friend.email)
-    console.log(socketId)
-    friend.socket_id = socketId
-  };
 
-  const connectTo = (friend) => {
-
-    // Disconnect existing socket if it exists
-    if (socket) {
-      socket.disconnect()
-    }
-
-    // Start socket connection, this enables event listeners
-    const socketInstance = setupSocket(socketUrl, onSendMessage, friend, updateFriendSocket);
-    setSocket(socketInstance)
-
-    console.log(friend.socketId)
+  const connectTo = (room) => {
+    console.log(`Trying to connect to room ${room._id}`)
+    connectSocket(socketUrl, handleNewMessage, room._id)
   }
   
   useEffect(() => {
+    
     // Cleanup component. This is called when socketUrl changes; this essentially disconnects the socket once the page changes
     return () => {
       if(socket)
-        socket.disconnect()
+        disconnectSocket()
     }
   }, [socket])
 
   return (
     <div className="relative md:w-[20vw] lg:w-[20vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] h-screen overflow-hidden">
-      {friends.length === 0 ? (
+      {chatRooms.length === 0 ? (
         <p className="text-gray-400 text-center pt-2">No conversations yet.</p>
       ) : (
-        friends.map((friend, index) => {
+        chatRooms.map((room, index) => {
+          let displayName = ""
+          if (room.type === "dm" ) {
+            displayName = room.members.find(value => value !== userData.email)
+          }
 
           return (
             <div key={index} 
               className=" bg-gray-600 m-2 pl-2 rounded cursor-pointer break-words" 
-              onClick={ () => connectTo(friend) }
+              onClick={ () => connectTo(room) }
             >
-              {friend.avatarId} || {friend.email}
+              {displayName}
               <br />
-              <p className="text-gray-400">{friend.status}</p>
+              <p className="text-gray-400 pt-1">Room ID: {room._id}</p>
             </div>
           );
         })
