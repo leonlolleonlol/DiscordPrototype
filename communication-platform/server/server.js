@@ -45,10 +45,15 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log(`SOCKET ID -> ${socket.id} : CONNECTED`)
 
-  socket.on("send-private-message", (msg, email) => {
-    console.log(`Message from ${email}: ${msg}`);
-    socket.to(friend.socket_id).emit('receive-message', msg, email)
+  socket.on("send-message", (msg, email, roomId) => {
+    console.log(`Message from ${email}, to ${roomId}: ${msg}`);
+    socket.to(roomId).emit('receive-message', msg, email)
   });
+
+  socket.on('join-room', (roomId) => {
+    socket.join(roomId)
+    console.log(`Socket ${socket.id} -> Room ${roomId}`)
+  })
 
   // Send the socket ID back to the client
   socket.emit("assign-socket-id", socket.id)
