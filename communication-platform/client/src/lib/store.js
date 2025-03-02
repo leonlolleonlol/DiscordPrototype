@@ -18,6 +18,8 @@ export const useSocketStore = create((set, get) => ({
     
     if (existingSocket && roomId === currentRoom) return; // Prevent multiple connections
 
+    if (existingSocket) existingSocket.disconnect();
+
     const socketInstance = io(URL, {
       reconnection: true, // Enable automatic reconnection
       transports: ["websocket"], // Use WebSockets directly
@@ -40,6 +42,7 @@ export const useSocketStore = create((set, get) => ({
     const socket = get().socket;
     if (socket) {
       socket.disconnect();
+      console.log("socket disconnected")
       set({ socket: null });
     }
   },

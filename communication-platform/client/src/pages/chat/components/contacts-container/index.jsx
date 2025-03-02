@@ -1,8 +1,7 @@
-import { useEffect } from "react";
 import { useSocketStore, useMessageStore } from "../../../../lib/store";
 
 const ContactsContainer = ({ chatRooms, userData }) => {
-  const { connectSocket, disconnectSocket, socket } = useSocketStore();
+  const { connectSocket } = useSocketStore();
   const { handleNewMessage } = useMessageStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -12,15 +11,6 @@ const ContactsContainer = ({ chatRooms, userData }) => {
     connectSocket(socketUrl, handleNewMessage, room._id)
   }
   
-  useEffect(() => {
-    
-    // Cleanup component. This is called when socketUrl changes; this essentially disconnects the socket once the page changes
-    return () => {
-      if(socket)
-        disconnectSocket()
-    }
-  }, [socket])
-
   return (
     <div className="relative md:w-[20vw] lg:w-[20vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] h-screen overflow-hidden">
       {chatRooms.length === 0 ? (
@@ -34,7 +24,7 @@ const ContactsContainer = ({ chatRooms, userData }) => {
 
           return (
             <div key={index} 
-              className=" bg-gray-600 m-2 pl-2 rounded cursor-pointer break-words" 
+              className=" bg-gray-600 m-2 pl-2 rounded cursor-pointer break-words hover:bg-blue-700 " 
               onClick={ () => connectTo(room) }
             >
               {displayName}

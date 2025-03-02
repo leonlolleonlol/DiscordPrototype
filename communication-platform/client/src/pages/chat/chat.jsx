@@ -44,13 +44,13 @@ const Chat = () => {
     {
       _id: "roomId_2",
       type: "dm",
-      members: ["testuser123@example.com", "massexample@gmail.com"],
+      members: ["newexample@gmail.com", "massexample@gmail.com"],
       createdAt: "2025-03-01T12:00:00Z"
     },
     {
       _id: "roomId_3",
       type: "dm",
-      members: ["george@example.com", "testuser123@example.com"],
+      members: ["george@example.com", "newexample@gmail.com"],
       createdAt: "2025-03-01T12:00:00Z"
     }
   ]
