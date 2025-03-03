@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { GrAttachment } from "react-icons/gr";
+import { useSocketStore, useMessageStore } from "../../../../../../lib/store";
 
-const MessageBar = ({ onSendMessage }) => {
+const MessageBar = ({  email }) => {
   const [message, setMessage] = useState("");
+  const { socket, currentRoom, sendMessage } = useSocketStore();
+  const { handleNewMessage } = useMessageStore();
 
   const handleSendMessage = () => {
     if (message.trim() !== "") {
-      onSendMessage(message); // Pass message to ChatContainer
+      handleNewMessage(message, email, "sender", currentRoom); // Pass message to ChatContainer. Updates the message immediately for the sender (sending chat update)
+
+    if (socket) {
+      sendMessage(message, email, currentRoom)  // Sends private message to server if socket exists
+    }
+
       setMessage(""); // Clear input after sending
     }
   };
@@ -18,7 +26,7 @@ const MessageBar = ({ onSendMessage }) => {
         className="flex-1 bg-gray-800 text-white px-3 py-2 rounded-md outline-none"
         placeholder="Enter a Message"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) => setMessage(e.target.value)} // constantly updates the value of message bar as you type
         onKeyDown={(e) => e.key === "Enter" && handleSendMessage()} // Allow sending with Enter key
       />
       <button className="ml-3 text-neutral-500 hover:text-white focus:outline-none duration-300 transition-all">
