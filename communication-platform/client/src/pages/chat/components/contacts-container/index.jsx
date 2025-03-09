@@ -6,8 +6,8 @@ import { Trash2 } from "lucide-react";//Icon for delete group chat
 
 const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const { connectSocket } = useSocketStore();
-  const { handleNewMessage } = useMessageStore();
-  const { dmRooms, tcRooms } = useChatRoomStore();
+  const { handleNewMessage, handleDeleteAllMessagesFromChatRoom} = useMessageStore();
+  const { dmRooms, tcRooms, handleDeleteTCRoom, handleCreateTCRoom} = useChatRoomStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
@@ -32,15 +32,14 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     setIsPopupOpen(true);
   };
 
-  const handleDeleteGroup = () => {
-    // To be linked to the backend process of deleting a group chat
-  };
-
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
   const handleMemberChange = (e) => setSelectedMembers(Array.from(e.target.selectedOptions, (option) => option.value));
   const handleSubmitGroupChat = () => {
     console.log("Creating group:", groupName, "with members:", selectedMembers);
     setIsPopupOpen(false);
+
+    const members = [...selectedMembers, userData.email];
+    handleCreateTCRoom(groupName, members, userData.email);
   };
 
   // Dynamically change color of chat room selected in left-side container
@@ -121,7 +120,8 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
               className="text-red-500 hover:text-red-900 pr-2"
               onClick={(e) => {
                 e.stopPropagation(); // Prevents clicking the delete button from triggering room selection
-                handleDeleteGroup(room._id);
+                handleDeleteAllMessagesFromChatRoom(room._id);
+                handleDeleteTCRoom(room._id);
               }}
             >
               <Trash2 size={16} />

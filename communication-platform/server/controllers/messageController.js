@@ -69,3 +69,16 @@ export const deleteMessage = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
+
+// Delete all messages from db based on a roomId. Called when deleting a text channel
+export const deleteAllMessagesByRoomId = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        
+        const deletedMessages = await messageModel.deleteMany({ roomId });
+
+        res.status(200).json({ message: `${deletedMessages.deletedCount} messages for this room were deleted successfully.` });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}

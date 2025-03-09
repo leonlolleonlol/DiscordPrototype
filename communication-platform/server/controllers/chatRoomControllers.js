@@ -4,14 +4,22 @@ import chatRoomModel from "../models/chatRoom.js";
 
 export const createChatRoom = async (req, res) =>{
     try{
-        const { type, name, serverId, members } = req.body;
+        const { type, name, serverId, members, createdBy, createdAt} = req.body;
 
-        const newChatRoom = new chatRoomModel({
+        const chatRoomData = {
             type,
-            name: name !== undefined ? name : null,     // Optional value. Not required for DMs
-            serverId: serverId !== undefined ? serverId : null, // Optional value. Not required for DMs
-            members
-        });
+            members,
+            createdBy,
+            createdAt
+        };
+    
+        // ✅ Add only if it's a textchannel (prevents validation errors)
+        if (type === "textchannel") {
+            chatRoomData.serverId = serverId || null; // Set default if missing
+            chatRoomData.name = name || "Unnamed Channel"; // Ensure name exists
+        }
+    
+        const newChatRoom = new chatRoomModel(chatRoomData);
 
         await newChatRoom.save();
         res.status(201).json(newChatRoom)
@@ -61,14 +69,15 @@ export const updateChatRoombyId = async (req, res) => {
 
 export const deleteChatRoomById = async(req, res) => {
     try{
-        const { chatRoomId } = req.params;
-
+        const { roomId } = req.params;
         const deletedChatRoom = await chatRoomModel.findOneAndDelete(
-            {_id: chatRoomId}
+            {_id: roomId}
         );
         if (!deletedChatRoom) {
             return res.status(404).json({error: "Chat room not found"});
         }
+
+        return res.status(200).json({ message: "Chat room deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

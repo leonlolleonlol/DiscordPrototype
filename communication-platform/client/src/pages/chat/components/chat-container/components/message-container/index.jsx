@@ -1,11 +1,11 @@
-import { useUserStore } from "@/lib/store";
+import { useUserStore, useMessageStore } from "@/lib/store";
 import { useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
 
 
 const MessageContainer = ({ messages, email }) => {
   const { userData } = useUserStore();
-  console.log(userData);
+  const { handleDeleteMessage } = useMessageStore();
   const [selectedMessage, setSelectedMessage] = useState(null);
 
   const handleRightClick = (e, index) => {
@@ -16,25 +16,7 @@ const MessageContainer = ({ messages, email }) => {
   const handleClickOutside = () => {
     setSelectedMessage(null); // Hide the trash icon when clicking outside
   };
-  const handleDeleteMessage = async (messageId) => {
-    try {
-      console.log("Deleting message:", messageId);
-      const response = await fetch(`/api/messages/${messageId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete message");
-      }
-
-      // Remove the deleted message from the UI
-      setMessages((prevMessages) => prevMessages.filter((msg) => msg._id !== messageId));
-      setSelectedMessage(null);
-    } catch (error) {
-      console.error("Error deleting message:", error);
-    }
-  };
-
+ 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#1c1d25]" onClick={handleClickOutside}>
       {messages.length === 0 ? (
@@ -60,7 +42,7 @@ const MessageContainer = ({ messages, email }) => {
                 {selectedMessage === index &&userData.role === "admin"&& (
                   <button
                     className="absolute top-0 right-0 p-1 bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-all"
-                    onClick={() => onClick=() => handleDeleteMessage(msg._id)} // Placeholder action
+                    onClick={() => handleDeleteMessage(msg._id)}
                   >
                     <FiTrash2 className="w-4 h-4" />
                   </button>

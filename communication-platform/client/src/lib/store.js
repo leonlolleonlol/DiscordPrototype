@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { io } from 'socket.io-client';
-import { saveNewMessageToDB, deleteMessageFromDB, fetchMessagesFromDB } from "./apiUtils/messageService.js";
+import { saveNewMessageToDB, deleteMessageFromDB, fetchMessagesFromDB, deleteAllMessagesOfDeletedChatRoom } from "./apiUtils/messageService.js";
 import { fetchChatRoomsFromDB, saveNewChatRoomToDB, deleteChatRoomFromDB } from "./apiUtils/chatRoomServices.js";
 
 export const useUserStore = create(set => ({
@@ -108,7 +108,7 @@ export const useMessageStore = create((set, get) => ({
   //Function to delete a message
   handleDeleteMessage: async (messageId) => {
     if (!messageId) {
-      console.error("Cannot fetch messages without a valid roomId");
+      console.error("Cannot fetch messages without a valid messageId");
       return;
     }
 
@@ -124,6 +124,26 @@ export const useMessageStore = create((set, get) => ({
     } catch (error) {
       console.error("Failed to save message:", error);
     };
+  },
+
+  handleDeleteAllMessagesFromChatRoom: async (roomId) => {
+    console.log("handleDeleteAllMessagesFromChatRoom called; passing: ", roomId);
+    if (!roomId) {
+      console.error("Cannot fetch messages without a valid roomId");
+      return;
+    }
+
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg.roomId !== roomId),
+    }));
+
+    try {
+      await deleteAllMessagesOfDeletedChatRoom(roomId);
+
+      console.log("Deleted all messages from database successfully");
+    } catch (error) {
+      console.error("Failed to delete all messages from chat room:", error)
+    }
   }
 }));
 
@@ -164,12 +184,13 @@ export const useChatRoomStore = create((set, get) => ({
   handleCreateDMRoom: async (members) => {
     const newDMRoom = { type: "dm", members };
 
-    set((state) => ({ chatRooms: [...state.chatRooms, newDMRoom] }));
-    set((state) => ({ dmRooms: [...state.dmRooms, newDMRoom] }));
-
     try {
       const savedDMRoom = await saveNewChatRoomToDB(newDMRoom);
       console.log("New DM Room saved to DB:", savedDMRoom);
+
+      set((state) => ({ chatRooms: [...state.chatRooms, savedDMRoom] }));
+      set((state) => ({ dmRooms: [...state.dmRooms, savedDMRoom] }));
+
     } catch (error) {
       console.error("Failed to create new DM room: ", error);
     }
@@ -177,29 +198,36 @@ export const useChatRoomStore = create((set, get) => ({
 
   // Method to handle creating a new TC Room
   handleCreateTCRoom: async (name, members, createdBy) => {
-    const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString()};
-
-    set((state) => ({ chatRooms: [...state.chatRooms, newTCRoom] }));
-    set((state) => ({ tcRooms: [...state.tcRooms, newTCRoom] })); F
+    console.log("handleCreateTCRoom called: ", { name, members, createdBy })
+    const newTCRoom = { type: "textchannel", name, members, createdBy, serverId: "default-server-id", createdAt: new Date().toISOString() };
 
     try {
       const savedTCRoom = await saveNewChatRoomToDB(newTCRoom);
       console.log("New TC Room saved to DB:", savedTCRoom);
+
+      set((state) => ({ chatRooms: [...state.chatRooms, savedTCRoom] }));
+      set((state) => ({ tcRooms: [...state.tcRooms, savedTCRoom] }));
     } catch (error) {
       console.error("Failed to create new TC room: ", error);
     }
   },
 
   handleDeleteTCRoom: async (roomId) => {
+    console.log("handleDeleteTCRoom called; passing: ", roomId);
+
     set((state) => ({
       chatRooms: state.chatRooms.filter((room) => room._id !== roomId),
     }));
 
     try {
-      await deleteChatRoomFromDB(roomId);
-      console.log("Deleted room from database successfully:", roomId);
+      const status = await deleteChatRoomFromDB(roomId);
+
+      if (status) {
+        console.log("Deleted room from database successfully");
+      }
+
     } catch (error) {
-      console.error("Failed to save message:", error);
+      console.error("Failed to delete chat room:", error);
     };
   }
 }));
