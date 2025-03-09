@@ -160,16 +160,16 @@ export const useChatRoomStore = create((set, get) => ({
     set({ dmRooms: newDmRooms, tcRooms: newTcRooms });
   },
 
-  // Method to handle creatiang a new DM Room
+  // Method to handle creating a new DM Room
   handleCreateDMRoom: async (members) => {
     const newDMRoom = { type: "dm", members };
-
-    set((state) => ({ chatRooms: [...state.chatRooms, newDMRoom] }));
-    set((state) => ({ dmRooms: [...state.dmRooms, newDMRoom] }));
 
     try {
       const savedDMRoom = await saveNewChatRoomToDB(newDMRoom);
       console.log("New DM Room saved to DB:", savedDMRoom);
+
+      set((state) => ({ chatRooms: [...state.chatRooms, savedDMRoom] }));
+      set((state) => ({ dmRooms: [...state.dmRooms, savedDMRoom] }));
     } catch (error) {
       console.error("Failed to create new DM room: ", error);
     }
@@ -177,7 +177,7 @@ export const useChatRoomStore = create((set, get) => ({
 
   // Method to handle creating a new TC Room
   handleCreateTCRoom: async (name, members, createdBy) => {
-    const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString()};
+    const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString() };
 
     set((state) => ({ chatRooms: [...state.chatRooms, newTCRoom] }));
     set((state) => ({ tcRooms: [...state.tcRooms, newTCRoom] })); F
