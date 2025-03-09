@@ -1,5 +1,5 @@
 import express from "express";
-import chatRoomModel from "../models/chatRoom.js";
+import { createChatRoom, deleteChatRoomById, getChatRoomsByEmail, updateChatRoombyId } from "../controllers/chatRoomControllers.js";
 import userModel from "../models/user.js";
 
 const router = express.Router();
@@ -41,5 +41,11 @@ router.get("/chatrooms/:email", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+// All routes related to Chat Rooms
+router.post("/chatrooms/create", createChatRoom);
+router.get("/chatrooms/fetch-by-email/:email", getChatRoomsByEmail);
+router.put("/chatrooms/delete/:roomId", updateChatRoombyId);
+router.delete("chatrooms/delete/:roomId", deleteChatRoomById);
 
 export default router;

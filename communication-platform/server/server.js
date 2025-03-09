@@ -33,8 +33,8 @@ mongoose.connect(dbURL)
   .catch((err) => console.error("DB connection error:", err));
 
 app.use('/', router);
-app.use("/api", messageRoutes)
-app.use("/api", chatRoomRoutes);
+app.use("/backend-api", messageRoutes)
+app.use("/backend-api", chatRoomRoutes);
 
 const server = app.listen(port, () => {
   console.log(`Server is running at ${port}`);
