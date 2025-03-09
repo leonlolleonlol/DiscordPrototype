@@ -1,6 +1,7 @@
-import { useSocketStore, useMessageStore, useChatRoomStore } from "../../../../lib/store";
-
+import { useSocketStore, useMessageStore, useChatRoomStore, useUserStore } from "../../../../lib/store";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { handleSignout } from "@/pages/auth/auth";
 
 
 const ContactsContainer = ({ userData , setSelectedRoom}) => {
@@ -16,6 +17,9 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [chatSelection, setChatSelection] = useState("");
   const [sectionFocus, setSectionFocus] = useState("")
+
+  const navigate = useNavigate();
+  const { setUserData } = useUserStore();
 
   const handleRoomClick = (room) => {
     console.log(`Connecting to room: ${room._id}`);
@@ -42,6 +46,13 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
 
   const toggleSectionFocus = (section) => {
     setSectionFocus(`${section}`)
+  }
+
+  // sign out of the application and redirect to auth
+  const signOut = async (e) => {
+    await handleSignout();
+    setUserData(undefined); // clear existing user data from the store'
+    navigate('/auth');
   }
 
   return (
@@ -138,6 +149,14 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
         </div>
       </div>
     )}
+
+    <button
+      className="absolute bottom-0 left-0 w-full bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 cursor-pointer"
+      onClick={signOut}
+    >
+      Sign-out
+    </button>
+
 
   </div>
 );
