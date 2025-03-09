@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 
 const Chat = () => {
   const { userData } = useUserStore();
-  const { chatRooms, fetchChatRooms } = useChatRoomStore();
+  const { chatRooms, fetchChatRooms, sortRooms, dmRooms } = useChatRoomStore();
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);  // Controls visibility
   const [fadeOut, setFadeOut] = useState(false);  // Controls fade effect
@@ -28,6 +28,11 @@ const Chat = () => {
       prevEmailRef.current = userData.email; // Store last email to prevent re-fetching
     }
   }, [userData?.email]);
+  
+  // Run sortRooms when chatRooms is updated
+  useEffect(() => {
+    sortRooms();
+  }, [chatRooms]);
 
   // Start fade-out effect before hiding the message
   useEffect(() => {

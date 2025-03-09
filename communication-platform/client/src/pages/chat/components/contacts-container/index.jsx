@@ -6,7 +6,7 @@ import { useState } from "react";
 const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const { connectSocket } = useSocketStore();
   const { handleNewMessage } = useMessageStore();
-  const { chatRooms } = useChatRoomStore();
+  const { dmRooms, tcRooms } = useChatRoomStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
@@ -14,6 +14,8 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [chatSelection, setChatSelection] = useState("");
+  const [sectionFocus, setSectionFocus] = useState("")
 
   const handleRoomClick = (room) => {
     console.log(`Connecting to room: ${room._id}`);
@@ -33,28 +35,36 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     setIsPopupOpen(false);
   };
 
+  // Dynamically change color of chat room selected in left-side container
+  const toggleChatSelection = (index) => {
+    setChatSelection(`${index}`)
+  }
+
+  const toggleSectionFocus = (section) => {
+    setSectionFocus(`${section}`)
+  }
+
   return (
     <div className="relative md:w-[20vw] lg:w-[20vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] h-screen overflow-hidden p-2">
       
     {/* Friends List Dropdown */}
-    <button className="w-full bg-gray-700 text-white px-4 py-2 rounded-md flex justify-between items-center"
+    <button className="w-full bg-gray-700 text-white px-4 py-2 rounded-md flex justify-between items-center cursor-pointer"
       onClick={() => setIsFriendsOpen(!isFriendsOpen)}>
       Direct Messages <span>{isFriendsOpen ? "▲" : "▼"}</span>
     </button>
 
     {isFriendsOpen && (
       <div className="mt-2 bg-gray-800 rounded-md overflow-hidden">
-        {chatRooms.length === 0 ? (
+        {dmRooms.length === 0 ? (
           <p className="text-gray-400 text-center py-2">No conversations yet.</p>
         ) : (
-          chatRooms.map((room, index) => {
-            let displayName = room.type === "dm"
-              ? room.members.find((value) => value !== userData.email)
-              : "Group Chat";
+          dmRooms.map((room, index) => {
+            let displayName = room.members.find((value) => value !== userData.email);
 
             return (
-              <div key={index} className="bg-gray-600 m-2 p-2 rounded cursor-pointer hover:bg-gray-500 transition"
-                onClick={() => handleRoomClick(room)}>
+              <div key={index} 
+                onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("dm") }}
+                className={`${ (chatSelection === index.toString() && sectionFocus === "dm" ) ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer ${ chatSelection === index.toString() ? 'hover:bg-blue-400' : 'hover:bg-gray-500'} transition overflow-hidden`}>
                 <span className="text-white">{displayName}</span>
                 <br />
                 <span className="text-gray-400">{displayName}</span>
@@ -66,19 +76,34 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     )}
 
     {/* Group Chats Dropdown */}
-    <button className="w-full bg-gray-700 text-white px-4 py-2 rounded-md flex justify-between items-center mt-4"
+    <button className="w-full bg-gray-700 text-white px-4 py-2 rounded-md flex justify-between items-center mt-4 cursor-pointer"
       onClick={() => setIsGroupsOpen(!isGroupsOpen)}>
       Group Chats <span>{isGroupsOpen ? "▲" : "▼"}</span>
     </button>
 
     {isGroupsOpen && (
       <div className="mt-2 bg-gray-800 rounded-md overflow-hidden">
-        <p className="text-gray-400 text-center py-2">No groups yet</p>
+        {tcRooms.length === 0 ? (
+          <p className="text-gray-400 text-center py-2">No groups yet</p>
+          )  : (
+            tcRooms.map((room, index) => {
+              let displayName = room.name;
+              return (
+                <div key={index} 
+                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("tc") }}
+                  className={`${ (chatSelection === index.toString() && sectionFocus === "tc") ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer ${ chatSelection === index.toString() ? 'hover:bg-blue-400' : 'hover:bg-gray-500'} transition`}>
+                  <span className="text-white">{displayName}</span>
+                  <br />
+                  <span className="text-gray-400">{displayName}</span>
+                </div>
+              );
+            })
+          )}
       </div>
     )}
 
     {/* Create Group Chat Button */}
-    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
       onClick={handleCreateGroupClick}>
       + Create Group Chat
     </button>
@@ -93,22 +118,20 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
             placeholder="Enter the group name" className="w-full p-2 bg-gray-700 text-white rounded mb-4" />
 
           <select multiple value={selectedMembers} onChange={handleMemberChange}
-            className="w-full p-2 bg-gray-700 text-white rounded mb-4">
-            {chatRooms.map((room, index) => {
-              let displayName = room.type === "dm"
-                ? room.members.find((value) => value !== userData.email)
-                : "Group Chat";
+            className="w-full p-2 bg-gray-700 text-white rounded mb-4 cursor-pointer">
+            {dmRooms.map((room, index) => {
+              let displayName = room.members.find((value) => value !== userData.email);
 
               return <option key={index} value={displayName}>{displayName}</option>;
             })}
           </select>
 
-          <button className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded mt-4"
+          <button className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded mt-4 cursor-pointer"
             onClick={handleSubmitGroupChat}>
             Create Group Chat
           </button>
 
-          <button className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2"
+          <button className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2 cursor-pointer"
             onClick={() => setIsPopupOpen(false)}>
             Cancel
           </button>

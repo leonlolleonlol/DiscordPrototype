@@ -114,7 +114,10 @@ export const useMessageStore = create((set, get) => ({
 
 export const useChatRoomStore = create((set, get) => ({
   chatRooms: [],
+  dmRooms: [],
+  tcRooms: [],
 
+  // Get all the chatrooms that the user is apart of
   fetchChatRooms: async (email) => {
     if (!email) return;
     
@@ -132,5 +135,21 @@ export const useChatRoomStore = create((set, get) => ({
     } catch (error) {
       console.error("Failed to fetch chat rooms:", error);
     }
+  },
+
+  sortRooms: () => {
+    const chatRooms = get().chatRooms;
+    const newDmRooms = [];
+    const newTcRooms = [];
+
+    for(const room of chatRooms){
+      if(room.type === "dm"){
+        newDmRooms.push(room);
+      } else {
+        newTcRooms.push(room);
+      }
+    }
+    
+    set({ dmRooms: newDmRooms, tcRooms: newTcRooms });
   }
 }));

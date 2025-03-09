@@ -17,10 +17,10 @@ const ChatContainer = ({ email , roomId}) => {
   return (
     <div className="flex-1 flex flex-col h-screen bg-[#1c1d25]">
       {/* Chat Header */}
-      <ChatHeader />
+      <ChatHeader email={email} />
 
       {/* Messages Section */}
-      <MessageContainer messages={messages} email={email}/>
+      <MessageContainer messages={messages} email={email} />
 
       {/* Message Input Bar */}
       <MessageBar email={email} />
