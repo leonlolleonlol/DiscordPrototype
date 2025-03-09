@@ -4,6 +4,7 @@ import { fieldsNotEmpty, validatePassword } from "~/validation.js"
 
 const SUP_ROUTE = "auth/signup";
 const SIN_ROUTE = "auth/signin";
+const SOUT_ROUTE = "auth/signout";
 
 // https://regex101.com/r/lHs2R3/1
 const EMAIL_PATTERN = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/;
@@ -67,3 +68,7 @@ export const handleSignup = async (avatarId, fName, lName, email, password, conf
   // post request to the server to authenticate sign-up credentials
   return postAuth(SUP_ROUTE, payload);
 };
+
+export const handleSignout = async () => {
+  return postAuth(SOUT_ROUTE);
+}

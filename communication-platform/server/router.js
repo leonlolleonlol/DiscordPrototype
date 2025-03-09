@@ -99,6 +99,13 @@ router.post('/auth/signup', async (req, res) => {
   }
 });
 
+router.post('/auth/signout', async (req, res) => {
+  if (req.cookies['jwt-auth'])
+    res.clearCookie('jwt-auth', { path: '/' });
+
+  res.status(200).send('Signing out user.');
+});
+
 router.get('/profile/data', async (req, res) => {
   const id = await check.verifyJWT(req, res);
 

@@ -1,6 +1,7 @@
-import { useSocketStore, useMessageStore, useChatRoomStore } from "../../../../lib/store";
-
+import { useSocketStore, useMessageStore, useChatRoomStore, useUserStore } from "../../../../lib/store";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { handleSignout } from "@/pages/auth/auth";
 
 
 const ContactsContainer = ({ userData , setSelectedRoom}) => {
@@ -14,6 +15,9 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
+
+  const navigate = useNavigate();
+  const { setUserData } = useUserStore();
 
   const handleRoomClick = (room) => {
     console.log(`Connecting to room: ${room._id}`);
@@ -32,6 +36,13 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     console.log("Creating group:", groupName, "with members:", selectedMembers);
     setIsPopupOpen(false);
   };
+
+  // sign out of the application and redirect to auth
+  const signOut = async (e) => {
+    await handleSignout();
+    setUserData(undefined); // clear existing user data from the store'
+    navigate('/auth');
+  }
 
   return (
     <div className="relative md:w-[20vw] lg:w-[20vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] h-screen overflow-hidden p-2">
@@ -115,6 +126,14 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
         </div>
       </div>
     )}
+
+    <button
+      className="absolute bottom-0 left-0 w-full bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 cursor-pointer"
+      onClick={signOut}
+    >
+      Sign-out
+    </button>
+
 
   </div>
 );
