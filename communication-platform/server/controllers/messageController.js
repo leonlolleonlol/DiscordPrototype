@@ -58,7 +58,7 @@ export const deleteMessage = async (req, res) => {
     try {
         const { messageId } = req.params;
 
-        const deletedMessage = await Message.findOneAndDelete({ messageId });
+        const deletedMessage = await messageModel.findOneAndDelete({ messageId });
 
         if (!deletedMessage) {
             return res.status(404).json({ error: "Message not found" });

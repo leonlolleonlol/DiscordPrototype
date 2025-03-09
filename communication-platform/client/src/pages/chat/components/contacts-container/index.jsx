@@ -1,4 +1,4 @@
-import { useSocketStore, useMessageStore, useChatRoomStore, useUserStore } from "../../../../lib/store";
+import { useSocketStore, useMessageStore, useChatRoomStore, useUserStore, useProfileQueryStore } from "../../../../lib/store";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { handleSignout } from "@/pages/auth/auth";
@@ -8,12 +8,15 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const { connectSocket } = useSocketStore();
   const { handleNewMessage } = useMessageStore();
   const { dmRooms, tcRooms } = useChatRoomStore();
+  const { profiles, fetchPossibleEmails, clearPossibleEmails } = useProfileQueryStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
   const [isGroupsOpen, setIsGroupsOpen] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isGCModalOpen, setIsGCModalOpen] = useState(false);
+  const [isDMModalOpen, setIsDMModalOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
+  const [dmTarget, setDmTarget] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [chatSelection, setChatSelection] = useState("");
   const [sectionFocus, setSectionFocus] = useState("")
@@ -28,32 +31,45 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     setSelectedRoom(room._id); // Update the selected room for `ChatContainer`
   };
 
-  const handleCreateGroupClick = () => {
-    setIsPopupOpen(true);
-  };
-
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
   const handleMemberChange = (e) => setSelectedMembers(Array.from(e.target.selectedOptions, (option) => option.value));
   const handleSubmitGroupChat = () => {
     console.log("Creating group:", groupName, "with members:", selectedMembers);
-    setIsPopupOpen(false);
+    setIsGCModalOpen(false);
   };
 
-  // Dynamically change color of chat room selected in left-side container
-  const toggleChatSelection = (index) => {
-    setChatSelection(`${index}`)
+  // 
+  const handleDmQueryChange = async (e) => { 
+    if (!e.target.value)
+      clearPossibleEmails();
+    else
+      await fetchPossibleEmails(e.target.value); 
+  }
+  const handleDmTargetChange = (e) => setDmTarget(e.target.value);
+  const handleSubmitDM = () => {
+    if (dmTarget) {
+      // populate
+    } else 
+      console.log("No query entered, escaping.");
+
+    setIsDMModalOpen(false);
+    clearPossibleEmails();
+  };
+  const handleCancelDM = () => {
+    setIsDMModalOpen(false);
+    clearPossibleEmails();
   }
 
-  const toggleSectionFocus = (section) => {
-    setSectionFocus(`${section}`)
-  }
+  // Dynamically change color of chat room selected in left-side container
+  const toggleChatSelection = (index) => { setChatSelection(`${index}`) };
+  const toggleSectionFocus = (section) => { setSectionFocus(`${section}`) };
 
   // sign out of the application and redirect to auth
   const signOut = async (e) => {
     await handleSignout();
     setUserData(undefined); // clear existing user data from the store'
     navigate('/auth');
-  }
+  };
 
   return (
     <div className="relative md:w-[20vw] lg:w-[20vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] h-screen overflow-hidden p-2">
@@ -86,6 +102,12 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
       </div>
     )}
 
+    {/* Create DM Button */}
+    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
+      onClick={() => setIsDMModalOpen(true) }>
+      + Create New DM
+    </button>
+
     {/* Group Chats Dropdown */}
     <button className="w-full bg-gray-700 text-white px-4 py-2 rounded-md flex justify-between items-center mt-4 cursor-pointer"
       onClick={() => setIsGroupsOpen(!isGroupsOpen)}>
@@ -115,12 +137,56 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
 
     {/* Create Group Chat Button */}
     <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
-      onClick={handleCreateGroupClick}>
+      onClick={() => setIsGCModalOpen(true) }>
       + Create Group Chat
     </button>
 
+    {/* Popup for Creating a DM */}
+    {isDMModalOpen && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+        <div className="bg-gray-800 p-6 rounded-lg w-1/3">
+          <h2 className="text-white text-lg mb-4">Create a DM</h2>
+
+          <input type="text" onChange={handleDmQueryChange}
+            placeholder="Enter your friend's email address" className="w-full p-2 bg-gray-700 text-white rounded mb-4" />
+
+          <div className="w-full p-2 bg-gray-700 text-white rounded mb-4 cursor-pointer">
+            {profiles && profiles.map(profile => {
+              return (
+                <div key={profile.email}>
+                  <input 
+                    type="radio" 
+                    name="dmTarget" 
+                    id={profile.email} 
+                    onChange={handleDmTargetChange}
+                    className="hidden peer"
+                  />
+                  <label  
+                    htmlFor={profile.email}
+                    className="cursor-pointer p-2 block transition-colors duration-300 hover:bg-gray-900 active:bg-gray-900 peer-checked:bg-gray-900 overflow-hidden"
+                  >
+                  {profile.firstName} {profile.lastName[0]}. ({profile.email})
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+
+          <button className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded mt-4 cursor-pointer"
+            onClick={handleSubmitDM}>
+            Open DM
+          </button>
+
+          <button className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2 cursor-pointer"
+            onClick={handleCancelDM}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
+
     {/* Popup for Creating Group Chat */}
-    {isPopupOpen && (
+    {isGCModalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
         <div className="bg-gray-800 p-6 rounded-lg w-1/3">
           <h2 className="text-white text-lg mb-4">Create a Group Chat</h2>
@@ -143,7 +209,7 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
           </button>
 
           <button className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2 cursor-pointer"
-            onClick={() => setIsPopupOpen(false)}>
+            onClick={() => setIsGCModalOpen(false)}>
             Cancel
           </button>
         </div>

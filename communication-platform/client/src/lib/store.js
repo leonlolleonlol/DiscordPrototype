@@ -1,10 +1,44 @@
 import { create } from "zustand";
 import { io } from 'socket.io-client';
+import { clientRequest } from "./utils";
+import { toast } from "sonner";
 
 export const useUserStore = create(set => ({
   userData: null,
   setUserData: (newData) => set({ userData: newData }),
 }));
+
+export const useProfileQueryStore = create(set => {
+  // closure'd variables for debouncing the email query
+  let debounceTimerId = undefined;
+  const TIMEOUT = 500;
+
+  return {
+    profiles: [],
+
+    // fetches the emails after no user input is entered for 300 ms
+    fetchPossibleEmails: async (query) => {
+      clearInterval(debounceTimerId);
+
+      debounceTimerId = setTimeout(async () => {
+        let filtered;
+        query = query.trim();
+
+        try {
+          const resp = await clientRequest.post("api/email-query", { query });
+          filtered = resp.data.profiles;
+        } catch (err) {
+          filtered = undefined;
+          toast.error("No users were found");
+        }
+
+        set({ profiles : filtered})
+      }, TIMEOUT);
+    },
+
+    clearPossibleEmails: () => set({ profiles : []}),
+  }
+});
 
 export const useSocketStore = create((set, get) => ({
   socket: null, // Holds the socket instance
