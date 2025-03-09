@@ -45,8 +45,8 @@ const Auth = () => {
         <div className="flex flex-col gap-10 items-center justify-center">
           <div className="flex items-center justify-center flex-col">
             <div className="flex items-center justify-center">
-              <h1 className="text-5xl font-bold md:text-6xl">Welcome</h1>
-              <img src={Cool} alt="Cool Emoji" className="h-[75px]" />
+              <h1 className="text-4xl font-bold md:text-5xl">Welcome</h1>
+              <img src={Cool} alt="Cool Emoji" className="h-[55px]" />
             </div>
             <p className='font-medium text-center'>Create your account and let&apos;s get talkin&apos;!</p>
           </div>
@@ -81,7 +81,7 @@ const Auth = () => {
               </TabsContent>
               <TabsContent className="flex flex-col gap-3"
                 value="signup">
-                  <img src={Avatar} alt="avatars" className="h-20" />
+                  <img src={Avatar} alt="avatars" className="h-13" />
                   <Slider
                   value={[sliderValue]}
                   onValueChange={(value) => setSliderValue(value[0])}
@@ -90,7 +90,7 @@ const Auth = () => {
                   step={1}
                 />
 
-                <p>Selected Avatar : #{sliderValue}</p>
+                <h6 className='text-xs md:text-xs'>Selected Avatar : #{sliderValue}</h6>
                 <Input
                   placeholder="First Name"
                   type="firstName"
@@ -112,9 +112,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                <br />
-                <h3>Password Criteria:</h3>
-                <p>10 or more characters, at least one number, symbol, and uppercase letter.</p>
+                <p className="text-s">Password Criteria: 10 or more characters, at least one number, symbol, and uppercase letter.</p>
                 <Input
                   placeholder="Password"
                   type="password"
@@ -137,7 +135,7 @@ const Auth = () => {
           </div>
         </div>
         <div className="hidden xl:flex justify-center items-center">
-          <img src={Background} alt="background login" className="h-[700px]" />
+          <img src={Background} alt="background login" className="h-[600px]" />
         </div>
       </div>
     </div>

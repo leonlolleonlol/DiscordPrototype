@@ -2,7 +2,7 @@ import { useSocketStore, useMessageStore, useChatRoomStore, useUserStore } from 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { handleSignout } from "@/pages/auth/auth";
-
+import { Trash2 } from "lucide-react";//Icon for delete group chat
 
 const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const { connectSocket } = useSocketStore();
@@ -30,6 +30,10 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
 
   const handleCreateGroupClick = () => {
     setIsPopupOpen(true);
+  };
+
+  const handleDeleteGroup = () => {
+    // To be linked to the backend process of deleting a group chat
   };
 
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
@@ -93,31 +97,50 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     </button>
 
     {isGroupsOpen && (
-      <div className="mt-2 bg-gray-800 rounded-md overflow-hidden">
-        {tcRooms.length === 0 ? (
-          <p className="text-gray-400 text-center py-2">No groups yet</p>
-          )  : (
-            tcRooms.map((room, index) => {
-              let displayName = room.name;
-              return (
-                <div key={index} 
-                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("tc") }}
-                  className={`${ (chatSelection === index.toString() && sectionFocus === "tc") ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer ${ chatSelection === index.toString() ? 'hover:bg-blue-400' : 'hover:bg-gray-500'} transition`}>
-                  <span className="text-white">{displayName}</span>
-                  <br />
-                  <span className="text-gray-400">{displayName}</span>
-                </div>
-              );
-            })
-          )}
-      </div>
+  <div className="mt-2 bg-gray-800 rounded-md overflow-hidden">
+    {tcRooms.length === 0 ? (
+      <p className="text-gray-400 text-center py-2">No groups yet</p>
+    ) : (
+      tcRooms.map((room, index) => {
+        let displayName = room.name;
+        return (
+          <div 
+            key={index} 
+            className={`flex items-center justify-between ${ (chatSelection === index.toString() && sectionFocus === "tc") ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer hover:bg-gray-500 transition`}
+            onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("tc") }}
+          >
+            {/* Chat Room Name (Expands to take available space) */}
+            <div className="flex-grow">
+              <span className="text-white">{displayName}</span>
+              <br />
+              <span className="text-gray-400">{displayName}</span>
+            </div>
+
+            {/* Trash Icon (Pushed to the far right) */}
+            <button 
+              className="text-red-500 hover:text-red-900 pr-2"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevents clicking the delete button from triggering room selection
+                handleDeleteGroup(room._id);
+              }}
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        );
+      })
     )}
+  </div>
+)}
+
 
     {/* Create Group Chat Button */}
-    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
+    {(userData?.role === "admin" && 
+    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
       onClick={handleCreateGroupClick}>
       + Create Group Chat
     </button>
+    )}
 
     {/* Popup for Creating Group Chat */}
     {isPopupOpen && (
