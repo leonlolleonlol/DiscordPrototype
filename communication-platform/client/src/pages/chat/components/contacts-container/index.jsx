@@ -114,18 +114,21 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
               <br />
               <span className="text-gray-400">{displayName}</span>
             </div>
+ 
 
             {/* Trash Icon (Pushed to the far right) */}
-            <button 
-              className="text-red-500 hover:text-red-900 pr-2"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevents clicking the delete button from triggering room selection
-                handleDeleteAllMessagesFromChatRoom(room._id);
+            {userData.role === "admin" && (
+              <button 
+                className="text-red-500 hover:text-red-900 pr-2"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevents clicking the delete button from triggering room selection
+                  handleDeleteAllMessagesFromChatRoom(room._id);
                 handleDeleteTCRoom(room._id);
-              }}
-            >
-              <Trash2 size={16} />
-            </button>
+                }}
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
         );
       })
