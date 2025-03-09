@@ -4,9 +4,9 @@ import { createMessage, getMessagesByRoom, updateMessage, deleteMessage } from "
 const router = express.Router();
 
 // Routes related to messages
-router.post("/messages", createMessage);
-router.get("/messages/:roomId", getMessagesByRoom);
-router.put("/messages/:messageId", updateMessage); 
-router.delete("/messages/:messageId", deleteMessage); 
+router.post("/messages/create", createMessage);
+router.get("/messages/fetch-by-roomId/:roomId", getMessagesByRoom);
+router.put("/messages/:messageId/update/:messageId", updateMessage); 
+router.delete("/messages/delete/:messageId", deleteMessage); 
 
 export default router;

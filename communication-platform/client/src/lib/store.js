@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { io } from 'socket.io-client';
+import { saveNewMessageToDB, deleteMessageFromDB, fetchMessagesFromDB } from "./apiUtils/messageService.js";
+import { fetchChatRoomsFromDB, saveNewChatRoomToDB, deleteChatRoomFromDB } from "./apiUtils/chatRoomServices.js";
 
 export const useUserStore = create(set => ({
   userData: null,
@@ -19,7 +21,7 @@ export const useSocketStore = create((set, get) => ({
     }
     const existingSocket = get().socket;
     const currentRoom = get().currentRoom;
-    
+
     if (existingSocket && roomId === currentRoom) return; // Prevent multiple connections
 
     if (existingSocket) existingSocket.disconnect();
@@ -56,7 +58,7 @@ export const useSocketStore = create((set, get) => ({
     const socket = get().socket;
     if (socket) {
       console.log("Sending message:", { message, email, roomId });
-      socket.emit("send-message",  message, email, roomId );
+      socket.emit("send-message", message, email, roomId);
     }
   },
 }));
@@ -72,11 +74,8 @@ export const useMessageStore = create((set, get) => ({
     }
 
     try {
-      console.log(`Fetching messages for room: ${roomId}`);
-
-      const response = await fetch(`http://localhost:3000/api/messages/${roomId}`);
-      const data = await response.json();
-      set({ messages: data }); // Update messages state with DB messages
+      const messagesFromDB = await fetchMessagesFromDB(roomId);
+      set({ messages: messagesFromDB }); // Update messages state with DB messages
     } catch (error) {
       console.error("Failed to fetch messages:", error);
     }
@@ -84,32 +83,48 @@ export const useMessageStore = create((set, get) => ({
 
   // Function to handle new messages
   handleNewMessage: async (newMessage, senderEmail, direction, roomId) => {
-    console.log("handleNewMessage called:", {newMessage, senderEmail, roomId});
+    console.log("handleNewMessage called:", { newMessage, senderEmail, roomId });
 
-    const message = {
+    const createMessage = {
       roomId: roomId,
       senderId: senderEmail,
       text: newMessage,
       direction: direction,
+      createdAt: new Date().toISOString()
     };
 
-    set((state) => ({ messages : [...state.messages, message]}));
+    set((state) => ({ messages: [...state.messages, createMessage] }));
 
-    if (direction === "sender"){
+    if (direction === "sender") {
       try {
-        await fetch("http://localhost:3000/api/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(message),
-        });
-  
-        console.log("Message saved to DB:", message);
+        const savedMessage = await saveNewMessageToDB(createMessage);
+        console.log("Message saved to DB:", savedMessage);
       } catch (error) {
         console.error("Failed to save message:", error);
       }
     }
-    
   },
+
+  //Function to delete a message
+  handleDeleteMessage: async (messageId) => {
+    if (!messageId) {
+      console.error("Cannot fetch messages without a valid roomId");
+      return;
+    }
+
+    // Remove the message from the messages state
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg._id !== messageId),
+    }));
+
+    // Delete the message from the database
+    try {
+      await deleteMessageFromDB(messageId);
+      console.log("Deleted message from database successfully.", messageId);
+    } catch (error) {
+      console.error("Failed to save message:", error);
+    };
+  }
 }));
 
 export const useChatRoomStore = create((set, get) => ({
@@ -120,18 +135,10 @@ export const useChatRoomStore = create((set, get) => ({
   // Get all the chatrooms that the user is apart of
   fetchChatRooms: async (email) => {
     if (!email) return;
-    
+
     try {
-      console.log("Fetching chat rooms for:", email);
-
-      const response = await fetch(`http://localhost:3000/api/chatrooms/${email}`);
-      const data = await response.json();
-
-      // console.log("API Response:", JSON.stringify(data, null, 2)); // Log full response
-
-      set({ chatRooms: data });
-      // console.log("Updated Chat Rooms:", JSON.stringify(get().chatRooms, null, 2));
-      
+      const chatRoomsFromDB = await fetchChatRoomsFromDB(email);
+      set({ chatRooms: chatRoomsFromDB });
     } catch (error) {
       console.error("Failed to fetch chat rooms:", error);
     }
@@ -142,14 +149,57 @@ export const useChatRoomStore = create((set, get) => ({
     const newDmRooms = [];
     const newTcRooms = [];
 
-    for(const room of chatRooms){
-      if(room.type === "dm"){
+    for (const room of chatRooms) {
+      if (room.type === "dm") {
         newDmRooms.push(room);
       } else {
         newTcRooms.push(room);
       }
     }
-    
+
     set({ dmRooms: newDmRooms, tcRooms: newTcRooms });
+  },
+
+  // Method to handle creatiang a new DM Room
+  handleCreateDMRoom: async (members) => {
+    const newDMRoom = { type: "dm", members };
+
+    set((state) => ({ chatRooms: [...state.chatRooms, newDMRoom] }));
+    set((state) => ({ dmRooms: [...state.dmRooms, newDMRoom] }));
+
+    try {
+      const savedDMRoom = await saveNewChatRoomToDB(newDMRoom);
+      console.log("New DM Room saved to DB:", savedDMRoom);
+    } catch (error) {
+      console.error("Failed to create new DM room: ", error);
+    }
+  },
+
+  // Method to handle creating a new TC Room
+  handleCreateTCRoom: async (name, members, createdBy) => {
+    const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString()};
+
+    set((state) => ({ chatRooms: [...state.chatRooms, newTCRoom] }));
+    set((state) => ({ tcRooms: [...state.tcRooms, newTCRoom] })); F
+
+    try {
+      const savedTCRoom = await saveNewChatRoomToDB(newTCRoom);
+      console.log("New TC Room saved to DB:", savedTCRoom);
+    } catch (error) {
+      console.error("Failed to create new TC room: ", error);
+    }
+  },
+
+  handleDeleteTCRoom: async (roomId) => {
+    set((state) => ({
+      chatRooms: state.chatRooms.filter((room) => room._id !== roomId),
+    }));
+
+    try {
+      await deleteChatRoomFromDB(roomId);
+      console.log("Deleted room from database successfully:", roomId);
+    } catch (error) {
+      console.error("Failed to save message:", error);
+    };
   }
 }));
