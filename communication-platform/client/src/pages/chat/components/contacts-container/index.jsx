@@ -29,6 +29,10 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
   const handleMemberChange = (e) => setSelectedMembers(Array.from(e.target.selectedOptions, (option) => option.value));
   const handleSubmitGroupChat = () => {
+    if (userData?.role !== "admin") {
+      alert("Only admins can create group chats.");
+      return;
+    }
     console.log("Creating group:", groupName, "with members:", selectedMembers);
     setIsPopupOpen(false);
   };
@@ -78,10 +82,12 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     )}
 
     {/* Create Group Chat Button */}
+    {(userData?.role === "admin" && 
     <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
       onClick={handleCreateGroupClick}>
       + Create Group Chat
     </button>
+    )}
 
     {/* Popup for Creating Group Chat */}
     {isPopupOpen && (
@@ -102,11 +108,11 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
               return <option key={index} value={displayName}>{displayName}</option>;
             })}
           </select>
-
           <button className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded mt-4"
             onClick={handleSubmitGroupChat}>
             Create Group Chat
           </button>
+         
 
           <button className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2"
             onClick={() => setIsPopupOpen(false)}>

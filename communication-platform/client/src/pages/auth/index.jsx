@@ -24,6 +24,8 @@ const Auth = () => {
   // redirect the user to the chat landing page if sign-in is successful
   const login = async () => {
     let user = await handleLogin(email, password);
+    console.log("User data from handleLogin:", user); // Debugging line
+
     if (user) {
       setUserData(user);
       navigate('/chat');

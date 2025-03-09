@@ -117,6 +117,7 @@ router.get('/profile/data', async (req, res) => {
       firstname: user.firstname,
       lastname: user.lastname,
       avatar: user.avatar,
+      role: user.role,
     };
 
     res.status(200).json({ message: "User session found.", user: userData });
