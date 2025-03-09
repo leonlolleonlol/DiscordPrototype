@@ -114,10 +114,12 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     )}
 
     {/* Create Group Chat Button */}
-    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
+    {(userData?.role === "admin" && 
+    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
       onClick={handleCreateGroupClick}>
       + Create Group Chat
     </button>
+    )}
 
     {/* Popup for Creating Group Chat */}
     {isPopupOpen && (
