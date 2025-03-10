@@ -4,11 +4,10 @@ import { useState } from "react";
 import { handleSignout } from "@/pages/auth/auth";
 import { toast } from "sonner";
 
-
 const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const { connectSocket } = useSocketStore();
   const { handleNewMessage } = useMessageStore();
-  const { dmRooms, tcRooms, handleCreateDMRoom, verifyDuplicateDM } = useChatRoomStore();
+  const { dmRooms, tcRooms, handleCreateDMRoom, verifyDuplicateDM, handleCreateTCRoom } = useChatRoomStore();
   const { profiles, fetchPossibleEmails, clearPossibleEmails } = useProfileQueryStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -33,11 +32,33 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
   };
 
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
-  const handleMemberChange = (e) => setSelectedMembers(Array.from(e.target.selectedOptions, (option) => option.value));
-  const handleSubmitGroupChat = () => {
-    console.log("Creating group:", groupName, "with members:", selectedMembers);
-    setIsGCModalOpen(false);
+  const handleGcTargetChange = (e) => {
+    if (e.target.checked)
+      setSelectedMembers((prev) => [...prev, e.target.value]);
+    else
+      setSelectedMembers((prev) => prev.filter((m) => m !== e.target.value));
   };
+  const handleSubmitGC = async () => {
+    if (selectedMembers && groupName) {
+      // add the current user to the list
+      try {
+        const members = [...selectedMembers, userData.email];
+        await handleCreateTCRoom(groupName, members, userData.email);
+
+      } catch (err) {
+        console.log("Something went wrong with your request: " + err.message);
+      }
+
+    } else 
+      toast.error("You must fill all fields to create a chat.");
+
+    clearGcQuery();
+  };
+  const clearGcQuery = () => {
+    setIsGCModalOpen(false);
+    setSelectedMembers([]);
+    clearPossibleEmails();
+  }
 
   // functions to query for a user and open a new dm
   const handleDmQueryChange = async (e) => { 
@@ -65,10 +86,9 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     } else 
       console.log("No query entered, escaping.");
 
-    setIsDMModalOpen(false);
-    clearPossibleEmails();
+    clearDmQuery();
   };
-  const handleCancelDM = () => {
+  const clearDmQuery = () => {
     setIsDMModalOpen(false);
     clearPossibleEmails();
   }
@@ -192,7 +212,7 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
           </button>
 
           <button className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2 cursor-pointer"
-            onClick={handleCancelDM}>
+            onClick={clearDmQuery}>
             Cancel
           </button>
         </div>
@@ -206,24 +226,59 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
           <h2 className="text-white text-lg mb-4">Create a Group Chat</h2>
 
           <input type="text" value={groupName} onChange={handleGroupNameChange}
-            placeholder="Enter the group name" className="w-full p-2 bg-gray-700 text-white rounded mb-4" />
+            placeholder="Enter the group name" className="w-full p-2 bg-gray-700 text-white rounded mb-4" 
+          />
 
-          <select multiple value={selectedMembers} onChange={handleMemberChange}
-            className="w-full p-2 bg-gray-700 text-white rounded mb-4 cursor-pointer">
-            {dmRooms.map((room, index) => {
-              let displayName = room.members.find((value) => value !== userData.email);
+          <input type="text" onChange={handleDmQueryChange}
+            placeholder="Enter your friend's email address" className="w-full p-2 bg-gray-700 text-white rounded mb-4"
+          />
 
-              return <option key={index} value={displayName}>{displayName}</option>;
+          <div className="w-full p-2 bg-gray-700 text-white rounded mb-4 cursor-pointer">
+            {profiles && profiles.map(profile => {
+              return (
+                <div key={profile.email}>
+                  <input 
+                    type="checkbox" 
+                    name="dmTarget" 
+                    id={profile.email}
+                    value={profile.email} 
+                    onChange={handleGcTargetChange}
+                    className="hidden peer"
+                  />
+                  <label  
+                    htmlFor={profile.email}
+                    className="cursor-pointer p-2 block transition-colors duration-300 hover:bg-gray-900 active:bg-gray-900 peer-checked:bg-gray-900 overflow-hidden"
+                  >
+                  {profile.firstName} {profile.lastName[0]}. ({profile.email})
+                  </label>
+                </div>
+              );
             })}
-          </select>
+          </div>
+
+          {/* Live list of selected users */}
+          {selectedMembers && (
+            <div>
+            {selectedMembers.map(profile => {
+              return (
+                <span 
+                  key={profile}
+                  className="block px-2 py-1 bg-gray-700"
+                >
+                  {profile}
+                </span>
+              )
+            })}
+          </div>
+          )}
 
           <button className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded mt-4 cursor-pointer"
-            onClick={handleSubmitGroupChat}>
+            onClick={handleSubmitGC}>
             Create Group Chat
           </button>
 
           <button className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2 cursor-pointer"
-            onClick={() => setIsGCModalOpen(false)}>
+            onClick={clearGcQuery}>
             Cancel
           </button>
         </div>

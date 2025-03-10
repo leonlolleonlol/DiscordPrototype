@@ -4,13 +4,20 @@ import chatRoomModel from "../models/chatRoom.js";
 
 export const createChatRoom = async (req, res) =>{
     try{
-        const { type, name, serverId, members } = req.body;
+        const { type, name, members, createdBy, createdAt } = req.body;
+
+        // create a unique id for each text channel 
+        let serverId;
+        if (type === "textchannel")
+            serverId = `${name}-${createdAt}`;
 
         const newChatRoom = new chatRoomModel({
             type,
             name: name !== undefined ? name : null,     // Optional value. Not required for DMs
             serverId: serverId !== undefined ? serverId : null, // Optional value. Not required for DMs
-            members
+            members,
+            createdBy: createdBy ? createdBy : null, // optional, not req for DM
+            createdAt: createdAt ? createdAt : null, // optional, not req for DM
         });
 
         await newChatRoom.save();

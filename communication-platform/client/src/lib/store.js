@@ -222,7 +222,7 @@ export const useChatRoomStore = create((set, get) => ({
     const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString() };
 
     set((state) => ({ chatRooms: [...state.chatRooms, newTCRoom] }));
-    set((state) => ({ tcRooms: [...state.tcRooms, newTCRoom] })); F
+    set((state) => ({ tcRooms: [...state.tcRooms, newTCRoom] }));
 
     try {
       const savedTCRoom = await saveNewChatRoomToDB(newTCRoom);
