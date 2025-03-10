@@ -19,15 +19,14 @@ export const useProfileQueryStore = create(set => {
     profiles: [],
 
     // fetches the emails after no user input is entered for 300 ms
-    fetchPossibleEmails: async (query) => {
+    fetchPossibleEmails: async (query, userEmail) => {
       clearInterval(debounceTimerId);
 
       debounceTimerId = setTimeout(async () => {
         let filtered;
-        query = query.trim();
 
         try {
-          const resp = await clientRequest.post("api/email-query", { query });
+          const resp = await clientRequest.post("backend-api/email-query", { query, userEmail });
           filtered = resp.data.profiles;
         } catch (err) {
           filtered = undefined;
@@ -207,6 +206,15 @@ export const useChatRoomStore = create((set, get) => ({
     } catch (error) {
       console.error("Failed to create new DM room: ", error);
     }
+  },
+
+  // Method to verify that a dm doesn't already exist with a target user
+  verifyDuplicateDM: (dmTarget) => {
+    const dmRooms = get().dmRooms;
+    if (!dmRooms)
+      return false;
+
+    return dmRooms.some(room => room.members.includes(dmTarget));
   },
 
   // Method to handle creating a new TC Room

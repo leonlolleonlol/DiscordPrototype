@@ -2,12 +2,13 @@ import { useSocketStore, useMessageStore, useChatRoomStore, useUserStore, usePro
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { handleSignout } from "@/pages/auth/auth";
+import { toast } from "sonner";
 
 
 const ContactsContainer = ({ userData , setSelectedRoom}) => {
   const { connectSocket } = useSocketStore();
   const { handleNewMessage } = useMessageStore();
-  const { dmRooms, tcRooms } = useChatRoomStore();
+  const { dmRooms, tcRooms, handleCreateDMRoom, verifyDuplicateDM } = useChatRoomStore();
   const { profiles, fetchPossibleEmails, clearPossibleEmails } = useProfileQueryStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -38,17 +39,29 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     setIsGCModalOpen(false);
   };
 
-  // 
+  // functions to query for a user and open a new dm
   const handleDmQueryChange = async (e) => { 
     if (!e.target.value)
       clearPossibleEmails();
     else
-      await fetchPossibleEmails(e.target.value); 
+      await fetchPossibleEmails(e.target.value, userData.email); 
   }
   const handleDmTargetChange = (e) => setDmTarget(e.target.value);
-  const handleSubmitDM = () => {
+  const handleSubmitDM = async () => {
     if (dmTarget) {
-      // populate
+      // ensure the dm doesn't already exist
+      if (verifyDuplicateDM(dmTarget)) {
+        toast.error("You already have an open DM with this user.");
+        return;
+      }
+
+      try {
+        await handleCreateDMRoom([dmTarget, userData.email]);
+
+      } catch (err) {
+        console.log("Something went wrong with your request: " + err.message);
+      }
+
     } else 
       console.log("No query entered, escaping.");
 
@@ -157,7 +170,8 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
                   <input 
                     type="radio" 
                     name="dmTarget" 
-                    id={profile.email} 
+                    id={profile.email}
+                    value={profile.email} 
                     onChange={handleDmTargetChange}
                     className="hidden peer"
                   />

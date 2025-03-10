@@ -7,11 +7,18 @@ const router = express.Router();
 // query all possible emails from a partial string autocomplete
 router.post("/email-query", async (req, res) => {
     try {
-        const { query } = req.body;
-        const emails = await userModel.find({ email: { $regex: query, $options: "i" } });
+        const { query, userEmail } = req.body;
+
+        const regex = `^${query.trim()}`;
+        const emails = await userModel.find({ email: { $regex: regex, $options: "i" } }).limit(4);
 
         // return three user profiles from the query's autocomplete
-        const profiles = emails.slice(0, 3).map((user) => {
+        // filter out the user's own profile if it happens to show up
+        const profiles = emails.filter((user) => { 
+            return user.email != userEmail;
+        })
+        .slice(0, 3)
+        .map((user) => {
             return { 
                 email: user.email, 
                 firstName: user.firstname,
