@@ -33,11 +33,11 @@ export const useProfileQueryStore = create(set => {
           toast.error("No users were found");
         }
 
-        set({ profiles : filtered})
+        set({ profiles: filtered })
       }, TIMEOUT);
     },
 
-    clearPossibleEmails: () => set({ profiles : []}),
+    clearPossibleEmails: () => set({ profiles: [] }),
   }
 });
 
@@ -220,13 +220,14 @@ export const useChatRoomStore = create((set, get) => ({
   // Method to handle creating a new TC Room
   handleCreateTCRoom: async (name, members, createdBy) => {
     const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString() };
-
-    set((state) => ({ chatRooms: [...state.chatRooms, newTCRoom] }));
-    set((state) => ({ tcRooms: [...state.tcRooms, newTCRoom] }));
-
+    
     try {
       const savedTCRoom = await saveNewChatRoomToDB(newTCRoom);
       console.log("New TC Room saved to DB:", savedTCRoom);
+
+      set((state) => ({ chatRooms: [...state.chatRooms, savedTCRoom] }));
+      set((state) => ({ tcRooms: [...state.tcRooms, savedTCRoom] }));
+
     } catch (error) {
       console.error("Failed to create new TC room: ", error);
     }

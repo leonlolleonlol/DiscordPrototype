@@ -50,7 +50,7 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
     }
 
     // add the current user to the list
-    console.log(selectedMembers);
+    console.log("Selected members: ", selectedMembers);
     try {
       const members = [...selectedMembers, userData.email];
       await handleCreateTCRoom(groupName, members, userData.email);
