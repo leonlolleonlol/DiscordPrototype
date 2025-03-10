@@ -39,18 +39,25 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
       setSelectedMembers((prev) => prev.filter((m) => m !== e.target.value));
   };
   const handleSubmitGC = async () => {
-    if (selectedMembers && groupName) {
-      // add the current user to the list
-      try {
-        const members = [...selectedMembers, userData.email];
-        await handleCreateTCRoom(groupName, members, userData.email);
+    if (!groupName) {
+      toast.error("A name is required to create the group chat.")
+      return;
+    }
 
-      } catch (err) {
-        console.log("Something went wrong with your request: " + err.message);
-      }
+    if (selectedMembers.length == 0) {
+      toast.error("No users selected.")
+      return;
+    }
 
-    } else 
-      toast.error("You must fill all fields to create a chat.");
+    // add the current user to the list
+    console.log(selectedMembers);
+    try {
+      const members = [...selectedMembers, userData.email];
+      await handleCreateTCRoom(groupName, members, userData.email);
+    } catch (err) {
+      console.log("Something went wrong with your request: " + err.message);
+    }
+
 
     clearGcQuery();
   };
@@ -62,6 +69,8 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
 
   // functions to query for a user and open a new dm
   const handleDmQueryChange = async (e) => { 
+    setDmTarget(""); // clear any existing user
+
     if (!e.target.value)
       clearPossibleEmails();
     else
@@ -84,7 +93,7 @@ const ContactsContainer = ({ userData , setSelectedRoom}) => {
       }
 
     } else 
-      console.log("No query entered, escaping.");
+      toast.error("You must select a user to open a DM");
 
     clearDmQuery();
   };
