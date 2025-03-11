@@ -15,7 +15,7 @@ export const createMessage = async (req, res) => {
         await newMessage.save();
         res.status(201).json(newMessage);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 };
 
@@ -27,7 +27,7 @@ export const getMessagesByRoom = async (req, res) => {
 
         res.status(200).json(messages);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 };
 
@@ -38,7 +38,7 @@ export const updateMessage = async (req, res) => {
         const { text } = req.body;
 
         const updatedMessage = await messageModel.findOneAndUpdate(
-            { messageId },
+            { _id: messageId },
             { text, sentAt: new Date() }, // Update text & timestamp
             { new: true }
         );
@@ -49,7 +49,7 @@ export const updateMessage = async (req, res) => {
 
         res.status(200).json(updatedMessage);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 };
 
@@ -58,7 +58,7 @@ export const deleteMessage = async (req, res) => {
     try {
         const { messageId } = req.params;
 
-        const deletedMessage = await Message.findOneAndDelete({ messageId });
+        const deletedMessage = await messageModel.findOneAndDelete({ messageId });
 
         if (!deletedMessage) {
             return res.status(404).json({ error: "Message not found" });
@@ -66,6 +66,6 @@ export const deleteMessage = async (req, res) => {
 
         res.status(200).json({ message: "Message deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 };
