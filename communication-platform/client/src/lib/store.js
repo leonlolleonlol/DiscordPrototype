@@ -2,11 +2,44 @@ import { create } from "zustand";
 import { io } from 'socket.io-client';
 import { saveNewMessageToDB, deleteMessageFromDB, fetchMessagesFromDB, deleteAllMessagesOfDeletedChatRoom } from "./apiUtils/messageService.js";
 import { fetchChatRoomsFromDB, saveNewChatRoomToDB, deleteChatRoomFromDB } from "./apiUtils/chatRoomServices.js";
+import { clientRequest } from "./utils";
+import { toast } from "sonner";
 
 export const useUserStore = create(set => ({
   userData: null,
   setUserData: (newData) => set({ userData: newData }),
 }));
+
+export const useProfileQueryStore = create(set => {
+  // closure'd variables for debouncing the email query
+  let debounceTimerId = undefined;
+  const TIMEOUT = 500;
+
+  return {
+    profiles: [],
+
+    // fetches the emails after no user input is entered for 300 ms
+    fetchPossibleEmails: async (query, userEmail) => {
+      clearInterval(debounceTimerId);
+
+      debounceTimerId = setTimeout(async () => {
+        let filtered;
+
+        try {
+          const resp = await clientRequest.post("backend-api/email-query", { query, userEmail });
+          filtered = resp.data.profiles;
+        } catch (err) {
+          filtered = undefined;
+          toast.error("No users were found");
+        }
+
+        set({ profiles: filtered })
+      }, TIMEOUT);
+    },
+
+    clearPossibleEmails: () => set({ profiles: [] }),
+  }
+});
 
 export const useSocketStore = create((set, get) => ({
   socket: null, // Holds the socket instance
@@ -112,17 +145,18 @@ export const useMessageStore = create((set, get) => ({
       return;
     }
 
-    // Remove the message from the messages state
-    set((state) => ({
-      messages: state.messages.filter((msg) => msg._id !== messageId),
-    }));
-
     // Delete the message from the database
     try {
       await deleteMessageFromDB(messageId);
+      
+      // Remove the message from the messages state
+      set((state) => ({
+        messages: state.messages.filter((msg) => msg._id !== messageId),
+      }));
+
       console.log("Deleted message from database successfully.", messageId);
     } catch (error) {
-      console.error("Failed to save message:", error);
+      console.error("Failed to delete message:", error);
     };
   },
 
@@ -180,7 +214,7 @@ export const useChatRoomStore = create((set, get) => ({
     set({ dmRooms: newDmRooms, tcRooms: newTcRooms });
   },
 
-  // Method to handle creatiang a new DM Room
+  // Method to handle creating a new DM Room
   handleCreateDMRoom: async (members) => {
     const newDMRoom = { type: "dm", members };
 
@@ -196,10 +230,21 @@ export const useChatRoomStore = create((set, get) => ({
     }
   },
 
+  // Method to verify that a dm doesn't already exist with a target user
+  verifyDuplicateDM: (dmTarget) => {
+    const dmRooms = get().dmRooms;
+    if (!dmRooms)
+      return false;
+
+    return dmRooms.some(room => room.members.includes(dmTarget));
+  },
+
   // Method to handle creating a new TC Room
   handleCreateTCRoom: async (name, members, createdBy) => {
     console.log("handleCreateTCRoom called: ", { name, members, createdBy })
-    const newTCRoom = { type: "textchannel", name, members, createdBy, serverId: "default-server-id", createdAt: new Date().toISOString() };
+    const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString() };
+
+    newTCRoom.serverId = `${name}-${newTCRoom.createdAt}`;
 
     try {
       const savedTCRoom = await saveNewChatRoomToDB(newTCRoom);
@@ -207,6 +252,7 @@ export const useChatRoomStore = create((set, get) => ({
 
       set((state) => ({ chatRooms: [...state.chatRooms, savedTCRoom] }));
       set((state) => ({ tcRooms: [...state.tcRooms, savedTCRoom] }));
+
     } catch (error) {
       console.error("Failed to create new TC room: ", error);
     }
