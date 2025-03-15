@@ -15,6 +15,8 @@ export const fetchChatRoomsFromDB = async (email) => {
 
 export const saveNewChatRoomToDB = async (roomToSave) => {
     try {
+
+        console.log("Sending data to create chat room:", roomToSave);
         const response = await fetch("http://localhost:3000/backend-api/chatrooms/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -41,6 +43,7 @@ export const deleteChatRoomFromDB = async (roomId) => {
             throw new Error(`Failed to delete room from db. Server responded with ${response.status}`);
         };
 
+        return true;
     }catch(error) {
         throw error;
     }

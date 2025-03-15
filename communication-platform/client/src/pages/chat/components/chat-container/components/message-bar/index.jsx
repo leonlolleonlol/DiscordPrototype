@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GrAttachment } from "react-icons/gr";
-import { useSocketStore, useMessageStore } from "../../../../../../lib/store";
+import { useMessageStore, useSocketStore } from "../../../../../../lib/store";
 
 const MessageBar = ({  email }) => {
   const [message, setMessage] = useState("");
+  const textareaRef = useRef(null);
   const { socket, currentRoom, sendMessage } = useSocketStore();
   const { handleNewMessage } = useMessageStore();
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"; // Reset height
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Adjust height
+    }
+  }, [message]); // Recalculate height on message change
 
   const handleSendMessage = () => {
     if (message.trim() !== "") {
@@ -19,15 +27,27 @@ const MessageBar = ({  email }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (e.shiftKey) {
+        setMessage((prev) => prev + "\n"); // Shift + Enter for a new line
+      } else {
+        e.preventDefault(); // Prevents default enter behavior
+        handleSendMessage();
+      }
+    }
+  };
+
   return (
-    <div className="h-16 bg-[#25262e] flex items-center px-4 border-t border-gray-700">
-      <input
-        type="text"
-        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded-md outline-none"
+    <div className="h-auto bg-[#25262e] flex items-center px-4 py-2 border-t border-gray-700">
+      <textarea
+        ref={textareaRef}
+        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded-md outline-none resize-none overflow-hidden max-h-40"
         placeholder="Enter a Message"
         value={message}
-        onChange={(e) => setMessage(e.target.value)} // constantly updates the value of message bar as you type
-        onKeyDown={(e) => e.key === "Enter" && handleSendMessage()} // Allow sending with Enter key
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={handleKeyDown}
+        rows="1"
       />
       <button className="ml-3 text-neutral-500 hover:text-white focus:outline-none duration-300 transition-all">
         <GrAttachment className="text-2xl" />

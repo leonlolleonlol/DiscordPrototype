@@ -46,3 +46,18 @@ export const deleteMessageFromDB = async (messageId) => {
     }
 };
 
+export const deleteAllMessagesOfDeletedChatRoom = async(roomId) => {
+    try {
+        const response = await fetch(`http://localhost:3000/backend-api/messages/delete-all/${roomId}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete all messages from room ${roomId}. Server responded with ${response.status}`);
+        }
+        
+    }catch(error) {
+        throw error;
+    }
+}
+

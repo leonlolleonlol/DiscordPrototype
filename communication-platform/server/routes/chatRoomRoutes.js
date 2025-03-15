@@ -53,6 +53,6 @@ router.get("/chatrooms/:email", async (req, res) => {
 router.post("/chatrooms/create", createChatRoom);
 router.get("/chatrooms/fetch-by-email/:email", getChatRoomsByEmail);
 router.put("/chatrooms/delete/:roomId", updateChatRoombyId);
-router.delete("chatrooms/delete/:roomId", deleteChatRoomById);
+router.delete("/chatrooms/delete/:roomId", deleteChatRoomById);
 
 export default router;

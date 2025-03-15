@@ -58,7 +58,7 @@ export const deleteMessage = async (req, res) => {
     try {
         const { messageId } = req.params;
 
-        const deletedMessage = await messageModel.findOneAndDelete({ messageId });
+        const deletedMessage = await messageModel.findOneAndDelete({ _id: messageId });
 
         if (!deletedMessage) {
             return res.status(404).json({ error: "Message not found" });
@@ -69,3 +69,16 @@ export const deleteMessage = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
+
+// Delete all messages from db based on a roomId. Called when deleting a text channel
+export const deleteAllMessagesByRoomId = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        
+        const deletedMessages = await messageModel.deleteMany({ roomId });
+
+        res.status(200).json({ message: `${deletedMessages.deletedCount} messages for this room were deleted successfully.` });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
