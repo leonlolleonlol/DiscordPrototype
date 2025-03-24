@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "lint": "npx jslint \"**/*.js\" \"**/*.jsx\"",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -39,6 +40,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "globals": "^15.14.0",
+    "jslint": "^0.12.1",
     "postcss": "^8.5.2",
     "tailwindcss": "^4.0.6",
     "vite": "^6.1.1"

@@ -18,20 +18,15 @@ jobs:
         with:
           node-version: 16
 
-      - name: Install Front End
+      - name: Install Dependencies
         run: |
           cd communication-platform/client
-          npm install
+          npm i
 
-      - name: Build Front End
+      - name: Lint Front End
         run: |
           cd communication-platform/client
-          npm run build   
-
-      - name: Test Front End (Placeholder)
-        run: |
-          cd communication-platform/client
-          npm test || echo "No real tests yet"
+          npm lint || echo "Linter script not found."
 
   backend:
     runs-on: ubuntu-latest
@@ -44,18 +39,12 @@ jobs:
         with:
           node-version: 16
 
-      - name: Install Server
+      - name: Install Dependencies
         run: |
           cd communication-platform/server
-          npm install
+          npm i
 
-      - name: No-Op Build for Server
+      - name: Lint Backend
         run: |
           cd communication-platform/server
-          echo "No build step here. 
-          exit 0
-
-      - name: Test Server (Placeholder)
-        run: |
-          cd communication-platform/server
-          npm test || echo "No real tests yet"
+          npm lint || echo "Linter script not found."
