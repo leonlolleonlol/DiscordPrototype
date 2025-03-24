@@ -1,9 +1,9 @@
-import { handleSignout } from "@/pages/auth/auth.js";
+import { handleSignout } from "@/pages/auth/auth";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore, useUserStore } from "@/lib/store";
+import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore, useUserStore } from "../../../../lib/store";
 
 const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const { connectSocket } = useSocketStore();
@@ -15,12 +15,14 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
   const [isGroupsOpen, setIsGroupsOpen] = useState(false);
   const [isGCModalOpen, setIsGCModalOpen] = useState(false);
+  const [iscreateAdminOpen, SetIscreateAdminOpen] = useState(false);
   const [isDMModalOpen, setIsDMModalOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [dmTarget, setDmTarget] = useState("");
+  const [adminTarget, setAdminTarget] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [chatSelection, setChatSelection] = useState("");
-  const [sectionFocus, setSectionFocus] = useState("");
+  const [sectionFocus, setSectionFocus] = useState("")
 
   const navigate = useNavigate();
   const { setUserData } = useUserStore();
@@ -41,12 +43,12 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   };
   const handleSubmitGC = async () => {
     if (!groupName) {
-      toast.error("A name is required to create the group chat.");
+      toast.error("A name is required to create the group chat.")
       return;
     }
 
     if (selectedMembers.length == 0) {
-      toast.error("No users selected.");
+      toast.error("No users selected.")
       return;
     }
 
@@ -66,7 +68,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
     setIsGCModalOpen(false);
     setSelectedMembers([]);
     clearPossibleEmails();
-  };
+  }
 
   // functions to query for a user and open a new dm
   const handleDmQueryChange = async (e) => {
@@ -76,8 +78,20 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
       clearPossibleEmails();
     else
       await fetchPossibleEmails(e.target.value, userData.email);
-  };
+  }
+
+  const handleAdminQueryChange = async (e) => {
+    setAdminTarget(""); // clear any existing user
+
+    if (!e.target.value)
+      clearPossibleEmails();
+    else
+      await fetchPossibleEmails(e.target.value, userData.email);
+  }
+
   const handleDmTargetChange = (e) => setDmTarget(e.target.value);
+  const handleAdminTargetChange = (e) => setAdminTarget(e.target.value);
+
   const handleSubmitDM = async () => {
     if (dmTarget) {
       // ensure the dm doesn't already exist
@@ -98,20 +112,43 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
 
     clearDmQuery();
   };
+
+
+  const handleSubmitAdmin = async () => {
+    if (adminTarget) {
+
+      // To do :
+      // 1- ensure the Admin is not trying to assign an admin 
+      //2- Call a method to update the role of that user to admin 
+
+    // Close the window,marking success
+    clearAdminQuery();
+  }
+};
+
+
+
+
+
   const clearDmQuery = () => {
     setIsDMModalOpen(false);
     clearPossibleEmails();
-  };
+  }
+
+  const clearAdminQuery = () => {
+    SetIscreateAdminOpen(false);
+    clearPossibleEmails();
+  }
 
   // Dynamically change color of chat room selected in left-side container
-  const toggleChatSelection = (index) => { setChatSelection(`${index}`); };
-  const toggleSectionFocus = (section) => { setSectionFocus(`${section}`); };
+  const toggleChatSelection = (index) => { setChatSelection(`${index}`) };
+  const toggleSectionFocus = (section) => { setSectionFocus(`${section}`) };
 
   // sign out of the application and redirect to auth
-  const signOut = async () => {
+  const signOut = async (e) => {
     await handleSignout();
     setUserData(undefined); // clear existing user data from the store'
-    navigate("/auth");
+    navigate('/auth');
   };
 
   return (
@@ -133,8 +170,8 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
 
               return (
                 <div key={index}
-                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("dm"); }}
-                  className={`${(chatSelection === index.toString() && sectionFocus === "dm") ? "bg-blue-500" : "bg-gray-600"} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? "hover:bg-blue-400" : "hover:bg-gray-500"} transition overflow-hidden`}>
+                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("dm") }}
+                  className={`${(chatSelection === index.toString() && sectionFocus === "dm") ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? 'hover:bg-blue-400' : 'hover:bg-gray-500'} transition overflow-hidden`}>
                   <span className="text-white">{displayName}</span>
                   <br />
                   <span className="text-gray-400">{displayName}</span>
@@ -166,8 +203,8 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
               let displayName = room.name;
               return (
                 <div key={index}
-                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("tc"); }}
-                  className={`${(chatSelection === index.toString() && sectionFocus === "tc") ? "bg-blue-500" : "bg-gray-600"} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? "hover:bg-blue-400" : "hover:bg-gray-500"} transition`}>
+                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("tc") }}
+                  className={`${(chatSelection === index.toString() && sectionFocus === "tc") ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? 'hover:bg-blue-400' : 'hover:bg-gray-500'} transition`}>
                   <span className="text-white">{displayName}</span>
                   <br />
                   <span className="text-gray-400">{displayName}</span>
@@ -195,6 +232,14 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
         <button className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
           onClick={() => setIsGCModalOpen(true)}>
           + Create Group Chat
+        </button>
+      )}
+
+        {/* Create Admin Button */}
+        {(userData?.role === "admin" &&
+        <button className="w-full bg-purple-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
+          onClick={() => SetIscreateAdminOpen(true)}>
+          + Add a new Admin
         </button>
       )}
 
@@ -242,6 +287,62 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
           </div>
         </div>
       )}
+
+
+      {/* Popup for Creating Admin */}
+{iscreateAdminOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+    <div className="bg-gray-800 p-6 rounded-lg w-1/3">
+      <h2 className="text-white text-lg mb-4">Create New Admin</h2>
+
+      <input 
+        type="text" 
+        onChange={handleAdminQueryChange}
+        placeholder="Enter user's email address" 
+        className="w-full p-2 bg-gray-700 text-white rounded mb-4" 
+      />
+
+      <div className="w-full p-2 bg-gray-700 text-white rounded mb-4 cursor-pointer">
+        {profiles && profiles.map(profile => (
+          <div key={profile.email}>
+            <input
+              type="radio"
+              name="adminTarget"
+              id={profile.email}
+              value={profile.email}
+              onChange={handleAdminTargetChange}
+              className="hidden peer"
+            />
+            <label
+              htmlFor={profile.email}
+              className="cursor-pointer p-2 block transition-colors duration-300 hover:bg-gray-900 peer-checked:bg-purple-600 overflow-hidden"
+            >
+              {profile.firstName} {profile.lastName[0]}. ({profile.email})
+            </label>
+          </div>
+        ))}
+      </div>
+
+      <button 
+        className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded mt-4 cursor-pointer"
+        onClick={handleSubmitAdmin}
+      >
+        Create Admin
+      </button>
+
+      <button 
+        className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded mt-2 cursor-pointer"
+        onClick={clearAdminQuery}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
+
+
+
 
       {/* Popup for Creating Group Chat */}
       {isGCModalOpen && (
@@ -291,10 +392,12 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
                     >
                       {profile}
                     </span>
-                  );
+                  )
                 })}
               </div>
             )}
+
+            
 
             <button className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded mt-4 cursor-pointer"
               onClick={handleSubmitGC}>
@@ -320,5 +423,6 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
     </div>
   );
 };
+
 
 export default ContactsContainer;
