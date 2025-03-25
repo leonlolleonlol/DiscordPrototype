@@ -1,14 +1,14 @@
-import Avatar from '@/assets/avatars.png';
-import Cool from '@/assets/cool.svg';
-import Background from '@/assets/login.png';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
+import Avatar from "@/assets/avatars.png";
+import Cool from "@/assets/cool.svg";
+import Background from "@/assets/login.png";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useUserStore } from '@/lib/store';
-import { useState } from 'react';
+import { useUserStore } from "@/lib/store";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { handleLogin, handleSignup } from './auth';
+import { handleLogin, handleSignup } from "./auth";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -26,18 +26,18 @@ const Auth = () => {
     let user = await handleLogin(email, password);
     if (user) {
       setUserData(user);
-      navigate('/chat');
+      navigate("/chat");
     }
-  }
+  };
 
   // redirect the user to the profile creation screen if credentials are valid
   const signup = async () => {
     let user = await handleSignup(sliderValue, firstName, lastName, email, password, confirmPassword);
     if (user) {
       setUserData(user);
-      navigate('/profile');
+      navigate("/profile");
     }
-  }
+  };
 
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
@@ -75,14 +75,14 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <Button className="rounded-full p-6" onClick={(e) => login()}>
+                <Button className="rounded-full p-6" onClick={() => login()}>
                   Login
                 </Button>
               </TabsContent>
               <TabsContent className="flex flex-col gap-3"
                 value="signup">
-                  <img src={Avatar} alt="avatars" className="h-13" />
-                  <Slider
+                <img src={Avatar} alt="avatars" className="h-13" />
+                <Slider
                   value={[sliderValue]}
                   onValueChange={(value) => setSliderValue(value[0])}
                   min={1}
@@ -127,7 +127,7 @@ const Auth = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <Button className="rounded-full p-6" onClick={(e) => signup()}>
+                <Button className="rounded-full p-6" onClick={() => signup()}>
                   Signup
                 </Button>
               </TabsContent>
@@ -139,7 +139,7 @@ const Auth = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Auth;

@@ -1,9 +1,9 @@
-import { handleSignout } from "@/pages/auth/auth";
+import { handleSignout } from "@/pages/auth/auth.js";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore, useUserStore } from "../../../../lib/store";
+import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore, useUserStore } from "@/lib/store";
 
 const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const { connectSocket } = useSocketStore();
@@ -20,7 +20,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const [dmTarget, setDmTarget] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [chatSelection, setChatSelection] = useState("");
-  const [sectionFocus, setSectionFocus] = useState("")
+  const [sectionFocus, setSectionFocus] = useState("");
 
   const navigate = useNavigate();
   const { setUserData } = useUserStore();
@@ -41,12 +41,12 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   };
   const handleSubmitGC = async () => {
     if (!groupName) {
-      toast.error("A name is required to create the group chat.")
+      toast.error("A name is required to create the group chat.");
       return;
     }
 
     if (selectedMembers.length == 0) {
-      toast.error("No users selected.")
+      toast.error("No users selected.");
       return;
     }
 
@@ -66,7 +66,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
     setIsGCModalOpen(false);
     setSelectedMembers([]);
     clearPossibleEmails();
-  }
+  };
 
   // functions to query for a user and open a new dm
   const handleDmQueryChange = async (e) => {
@@ -76,7 +76,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
       clearPossibleEmails();
     else
       await fetchPossibleEmails(e.target.value, userData.email);
-  }
+  };
   const handleDmTargetChange = (e) => setDmTarget(e.target.value);
   const handleSubmitDM = async () => {
     if (dmTarget) {
@@ -101,17 +101,17 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const clearDmQuery = () => {
     setIsDMModalOpen(false);
     clearPossibleEmails();
-  }
+  };
 
   // Dynamically change color of chat room selected in left-side container
-  const toggleChatSelection = (index) => { setChatSelection(`${index}`) };
-  const toggleSectionFocus = (section) => { setSectionFocus(`${section}`) };
+  const toggleChatSelection = (index) => { setChatSelection(`${index}`); };
+  const toggleSectionFocus = (section) => { setSectionFocus(`${section}`); };
 
   // sign out of the application and redirect to auth
-  const signOut = async (e) => {
+  const signOut = async () => {
     await handleSignout();
     setUserData(undefined); // clear existing user data from the store'
-    navigate('/auth');
+    navigate("/auth");
   };
 
   return (
@@ -133,8 +133,8 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
 
               return (
                 <div key={index}
-                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("dm") }}
-                  className={`${(chatSelection === index.toString() && sectionFocus === "dm") ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? 'hover:bg-blue-400' : 'hover:bg-gray-500'} transition overflow-hidden`}>
+                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("dm"); }}
+                  className={`${(chatSelection === index.toString() && sectionFocus === "dm") ? "bg-blue-500" : "bg-gray-600"} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? "hover:bg-blue-400" : "hover:bg-gray-500"} transition overflow-hidden`}>
                   <span className="text-white">{displayName}</span>
                   <br />
                   <span className="text-gray-400">{displayName}</span>
@@ -166,8 +166,8 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
               let displayName = room.name;
               return (
                 <div key={index}
-                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("tc") }}
-                  className={`${(chatSelection === index.toString() && sectionFocus === "tc") ? 'bg-blue-500' : 'bg-gray-600'} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? 'hover:bg-blue-400' : 'hover:bg-gray-500'} transition`}>
+                  onClick={() => { handleRoomClick(room), toggleChatSelection(index), toggleSectionFocus("tc"); }}
+                  className={`${(chatSelection === index.toString() && sectionFocus === "tc") ? "bg-blue-500" : "bg-gray-600"} m-2 p-2 rounded cursor-pointer ${chatSelection === index.toString() ? "hover:bg-blue-400" : "hover:bg-gray-500"} transition`}>
                   <span className="text-white">{displayName}</span>
                   <br />
                   <span className="text-gray-400">{displayName}</span>
@@ -291,7 +291,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
                     >
                       {profile}
                     </span>
-                  )
+                  );
                 })}
               </div>
             )}

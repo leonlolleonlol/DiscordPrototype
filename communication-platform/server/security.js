@@ -4,6 +4,7 @@ import userModel from "./models/user.js";
 import { fieldsNotEmpty, validatePassword } from "../shared/validation.js";
 
 // https://regex101.com/r/lHs2R3/1
+// eslint-disable-next-line -- the \ is needed here to using the literal period
 const EMAIL_PATTERN = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/;
 
 // signs a payload of data and sends it as a JWT-AUTH cookie
@@ -11,13 +12,13 @@ function signSendJWT(response, payload) {
   const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: 10800000 });
 
   response.cookie("jwt-auth", token, {
-    httpOnly: true, secure: true, sameSite: "None", maxAge: 10800000 
+    httpOnly: true, secure: true, sameSite: "None", maxAge: 10800000
   });
 }
 
 // verifies that the JWT token exists and extracts the user's id
 async function verifyJWT(request) {
-  const token = request.cookies['jwt-auth'];
+  const token = request.cookies["jwt-auth"];
   if (!token)
     return false;
 
@@ -25,7 +26,7 @@ async function verifyJWT(request) {
 
   // extract the id if it exists
   jwt.verify(token, process.env.JWT_KEY, async(err, payload) => {
-    if (!err) 
+    if (!err)
       id = payload.id;
   });
 
@@ -47,7 +48,7 @@ async function verifyPasswordHash(pass, hash) {
     .catch(err => {
       console.log("Failed comparing passwords: " + err.message);
       return undefined;
-    })
+    });
 }
 
 // performs input validation and password checking to okay a sign-in
@@ -61,7 +62,7 @@ async function authenticateSignIn(email, password) {
     message = "An email and password are required to sign-in.";
     return { status, message, user }; // early exit if fields aren't satisfied
   }
-  
+
   // query to check if the email exists and passwords match
   const user = await userModel.findOne({ email: email.toLowerCase() });
   if (!user) {
@@ -74,7 +75,7 @@ async function authenticateSignIn(email, password) {
     const passMatches = await verifyPasswordHash(password, user.password);
     if (passMatches == undefined) {
       status = 500;
-      message = "Failed to authenticate password, please try again later."
+      message = "Failed to authenticate password, please try again later.";
     }
     else if (!passMatches) {
       status = 400;
@@ -97,7 +98,7 @@ async function authenticateSignUp(avatarId, fName, lName, email, password, confi
   }
   else if (!EMAIL_PATTERN.test(email)) {
     status = 400;
-    message = "Invalid email address format (email@address.dom)."
+    message = "Invalid email address format (email@address.dom).";
   }
   else if (!validatePassword(password)) {
     status = 400;
@@ -118,6 +119,6 @@ async function authenticateSignUp(avatarId, fName, lName, email, password, confi
   return { status, message };
 }
 
-export { 
-  signSendJWT, verifyJWT, hashPassword, authenticateSignIn, authenticateSignUp 
+export {
+  signSendJWT, verifyJWT, hashPassword, authenticateSignIn, authenticateSignUp
 };

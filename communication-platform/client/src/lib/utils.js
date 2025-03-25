@@ -9,7 +9,7 @@ export function cn(...inputs) {
 
 // axios object to send requests to the server
 export const clientRequest = axios.create(
-  {baseURL: import.meta.env.VITE_SERVER_URL, withCredentials: true}
+  { baseURL: import.meta.env.VITE_SERVER_URL, withCredentials: true }
 );
 
 export const animationDefaultOptions = {

@@ -2,7 +2,6 @@ import { useUserStore, useMessageStore } from "@/lib/store";
 import { useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
 
-
 const MessageContainer = ({ messages, email }) => {
   const { userData } = useUserStore();
   const { handleDeleteMessage } = useMessageStore();
@@ -16,7 +15,7 @@ const MessageContainer = ({ messages, email }) => {
   const handleClickOutside = () => {
     setSelectedMessage(null); // Hide the trash icon when clicking outside
   };
- 
+
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#1c1d25]" onClick={handleClickOutside}>
       {messages.length === 0 ? (

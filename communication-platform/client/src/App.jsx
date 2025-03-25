@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Auth from "./pages/auth";
-import Chat from "./pages/chat/chat";
-import Profile from "./pages/profile";
-import { useUserStore } from './lib/store';
-import { clientRequest } from './lib/utils';
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Auth from "./pages/auth/Auth.jsx";
+import Chat from "./pages/chat/Chat.jsx";
+import Profile from "./pages/profile/Profile.jsx";
+import { useUserStore } from "./lib/store";
+import { clientRequest } from "./lib/utils";
 
 const DATA_ROUTE = "profile/data";
 
@@ -27,18 +27,18 @@ const App = () => {
   useEffect(() => {
     // fetch user-data if it exists in a cookie
     const updUserData = async() => {
-    clientRequest.get(DATA_ROUTE, {withCredentials: true})
-      .then((res) => {
-        setUserData(res.data.user);
-      })
-      .catch((err) => { console.log(err.message)});
-    }
+      clientRequest.get(DATA_ROUTE, { withCredentials: true })
+        .then((res) => {
+          setUserData(res.data.user);
+        })
+        .catch((err) => { console.log(err.message);});
+    };
 
     if (!userData)
       updUserData();
 
   }, [userData, setUserData]);
-  
+
   return (
     <BrowserRouter>
       <Routes>

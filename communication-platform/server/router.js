@@ -6,7 +6,7 @@ export const router = new Router();
 
 // handle http requests to the server
 
-router.post('/auth/signin', async (req, res) => {
+router.post("/auth/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -17,7 +17,7 @@ router.post('/auth/signin', async (req, res) => {
       return res.status(status).json({ message: message });
     }
 
-    check.signSendJWT(res, { id: user._id, email: user.email});
+    check.signSendJWT(res, { id: user._id, email: user.email });
 
     // user data returned to client
     const userData = {
@@ -26,7 +26,7 @@ router.post('/auth/signin', async (req, res) => {
       firstName: user.firstname,
       lastName: user.lastname,
       avatar: user.avatar,
-      status: 'online',
+      status: "online",
       friends: user.friends,
       role: user.role
     };
@@ -42,10 +42,10 @@ router.post('/auth/signin', async (req, res) => {
   }
 });
 
-router.post('/auth/signup', async (req, res) => {
+router.post("/auth/signup", async (req, res) => {
   try {
     const { avatarId, fName, lName, email, password, confirm } = req.body;
-    
+
     let { status, message } = await check.authenticateSignUp(avatarId, fName, lName, email, password, confirm);
     if (status > 200) {
       console.log(`Failed sign-up attempt (${email}): ${message}`);
@@ -71,18 +71,18 @@ router.post('/auth/signup', async (req, res) => {
       await newUser.save();
       console.log(`New user saved: ${email}.`);
 
-      check.signSendJWT(res, { id: newUser._id, email: newUser.email});
+      check.signSendJWT(res, { id: newUser._id, email: newUser.email });
 
       // known user data returned to client
       const userData = {
         id: newUser._id,
-        avatarId, 
+        avatarId,
         firstName: fName,
         lastName: lName,
         email,
-        status: 'online',
+        status: "online",
         friends: [],
-        role: 'user'
+        role: "user"
       };
 
       // sign up successful
@@ -99,14 +99,14 @@ router.post('/auth/signup', async (req, res) => {
   }
 });
 
-router.post('/auth/signout', async (req, res) => {
-  if (req.cookies['jwt-auth'])
-    res.clearCookie('jwt-auth', { path: '/' });
+router.post("/auth/signout", async (req, res) => {
+  if (req.cookies["jwt-auth"])
+    res.clearCookie("jwt-auth", { path: "/" });
 
-  res.status(200).send('Signing out user.');
+  res.status(200).send("Signing out user.");
 });
 
-router.get('/profile/data', async (req, res) => {
+router.get("/profile/data", async (req, res) => {
   const id = await check.verifyJWT(req, res);
 
   if (!id) {
@@ -115,7 +115,7 @@ router.get('/profile/data', async (req, res) => {
   }
 
   const user = await userModel.findById(id);
-  
+
   if (user) {
     // user data returned to client
     const userData = {
@@ -130,5 +130,5 @@ router.get('/profile/data', async (req, res) => {
     res.status(200).json({ message: "User session found.", user: userData });
   }
   else
-    res.status(404).json({ message: "User ID not found in database."});
+    res.status(404).json({ message: "User ID not found in database." });
 });

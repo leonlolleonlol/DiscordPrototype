@@ -1,12 +1,13 @@
 import { toast } from "sonner";
 import { clientRequest } from "@/lib/utils";
-import { fieldsNotEmpty, validatePassword } from "~/validation.js"
+import { fieldsNotEmpty, validatePassword } from "~/validation.js";
 
 const SUP_ROUTE = "auth/signup";
 const SIN_ROUTE = "auth/signin";
 const SOUT_ROUTE = "auth/signout";
 
 // https://regex101.com/r/lHs2R3/1
+// eslint-disable-next-line -- the \ is needed here to using the literal period
 const EMAIL_PATTERN = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/;
 
 // sends a post request to a destination route, returns true if status 200
@@ -17,15 +18,15 @@ async function postAuth(dest, param) {
   }
   catch (err) {
     let status = err.response;
-      if (status) {
-        console.log(`(${status.status}) ${status.statusText}: ${status.data.message}`);
-        toast.error(status.data.message);
-      }
-      else {
-        toast.error("Server was unresponsive. Please try again later.");
-      }
+    if (status) {
+      console.log(`(${status.status}) ${status.statusText}: ${status.data.message}`);
+      toast.error(status.data.message);
+    }
+    else {
+      toast.error("Server was unresponsive. Please try again later.");
+    }
 
-      return false;
+    return false;
   }
 }
 
@@ -71,4 +72,4 @@ export const handleSignup = async (avatarId, fName, lName, email, password, conf
 
 export const handleSignout = async () => {
   return postAuth(SOUT_ROUTE);
-}
+};
