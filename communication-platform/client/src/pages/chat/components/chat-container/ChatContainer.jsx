@@ -1,11 +1,11 @@
-import ChatHeader from "./components/chat-header";
-import MessageContainer from "./components/message-container";
-import MessageBar from "./components/message-bar";
-import { useMessageStore } from "../../../../lib/store"
+import ChatHeader from "./components/ChatHeader.jsx";
+import MessageContainer from "./components/MessageContainer.jsx";
+import MessageBar from "./components/MessageBar.jsx";
+import { useMessageStore } from "@/lib/store";
 import { useEffect } from "react";
 
-const ChatContainer = ({ email , roomId}) => {
-  const { messages, fetchMessages} = useMessageStore()
+const ChatContainer = ({ email , roomId }) => {
+  const { messages, fetchMessages } = useMessageStore();
 
   // Fetch messages when roomId changes
   useEffect(() => {

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { GrAttachment } from "react-icons/gr";
-import { useMessageStore, useSocketStore } from "../../../../../../lib/store";
+import { useMessageStore, useSocketStore } from "@/lib/store";
 
-const MessageBar = ({  email }) => {
+const MessageBar = ({ email }) => {
   const [message, setMessage] = useState("");
   const textareaRef = useRef(null);
   const { socket, currentRoom, sendMessage } = useSocketStore();
@@ -19,9 +19,9 @@ const MessageBar = ({  email }) => {
     if (message.trim() !== "") {
       handleNewMessage(message, email, "sender", currentRoom); // Pass message to ChatContainer. Updates the message immediately for the sender (sending chat update)
 
-    if (socket) {
-      sendMessage(message, email, currentRoom)  // Sends private message to server if socket exists
-    }
+      if (socket) {
+        sendMessage(message, email, currentRoom);  // Sends private message to server if socket exists
+      }
 
       setMessage(""); // Clear input after sending
     }

@@ -1,11 +1,11 @@
 import { useUserStore, useChatRoomStore } from "@/lib/store";
-import ContactsContainer from "./components/contacts-container";
-import ChatContainer from "./components/chat-container";
+import ContactsContainer from "./components/ContactsContainer";
+import ChatContainer from "./components/chat-container/ChatContainer";
 import { useState, useEffect, useRef } from "react";
 
 const Chat = () => {
   const { userData } = useUserStore();
-  const { chatRooms, fetchChatRooms, sortRooms, dmRooms } = useChatRoomStore();
+  const { chatRooms, fetchChatRooms, sortRooms } = useChatRoomStore();
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showWelcome, setShowWelcome] = useState(true);  // Controls visibility
   const [fadeOut, setFadeOut] = useState(false);  // Controls fade effect
@@ -28,7 +28,7 @@ const Chat = () => {
       prevEmailRef.current = userData.email; // Store last email to prevent re-fetching
     }
   }, [userData?.email]);
-  
+
   // Run sortRooms when chatRooms is updated
   useEffect(() => {
     sortRooms();
@@ -49,33 +49,6 @@ const Chat = () => {
       clearTimeout(hideTimer);
     };
   }, []);
-
-  // Make shift data
-  // const ALL_ROOMS = [
-  //   {
-  //     _id: "roomId_1",
-  //     type: "dm",
-  //     members: ["george@example.com", "massexample@gmail.com"],
-  //     createdAt: "2025-03-01T12:00:00Z"
-  //   },
-  //   {
-  //     _id: "roomId_2",
-  //     type: "dm",
-  //     members: ["newexample@gmail.com", "massexample@gmail.com"],
-  //     createdAt: "2025-03-01T12:00:00Z"
-  //   },
-  //   {
-  //     _id: "roomId_3",
-  //     type: "dm",
-  //     members: ["george@example.com", "newexample@gmail.com"],
-  //     createdAt: "2025-03-01T12:00:00Z"
-  //   }
-  // ]
-
-  // // Make shift data
-  // const chatRooms = ALL_ROOMS.filter((room) => {
-  //   return room.members.find((value) => value === email)
-  // })
 
   return (
     <div className="relative h-screen bg-gray-900 text-white flex">
