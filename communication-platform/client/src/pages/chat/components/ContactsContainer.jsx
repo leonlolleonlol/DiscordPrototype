@@ -9,7 +9,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const { connectSocket } = useSocketStore();
   const { handleNewMessage, handleDeleteAllMessagesFromChatRoom } = useMessageStore();
   const { dmRooms, tcRooms, handleCreateDMRoom, verifyDuplicateDM, handleCreateTCRoom, handleDeleteTCRoom } = useChatRoomStore();
-  const { profiles, fetchPossibleEmails, clearPossibleEmails } = useProfileQueryStore();
+  const { profiles, fetchPossibleEmails, clearPossibleEmails,userToAdmin } = useProfileQueryStore();
   const socketUrl = import.meta.env.VITE_SERVER_URL;
 
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
@@ -116,14 +116,12 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
 
   const handleSubmitAdmin = async () => {
     if (adminTarget) {
-
-      // To do :
-      // 1- ensure the Admin is not trying to assign an admin 
-      //2- Call a method to update the role of that user to admin 
-
-    // Close the window,marking success
-    clearAdminQuery();
+      await userToAdmin(adminTarget);
+      toast.message(`${adminTarget}`+ " has now been promoted to admin!");
+      clearAdminQuery();
   }
+  else
+    toast.error("Error in user promotion");
 };
 
 
@@ -303,7 +301,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
       />
 
       <div className="w-full p-2 bg-gray-700 text-white rounded mb-4 cursor-pointer">
-        {profiles && profiles.map(profile => (
+        {profiles && (profiles?.filter(user => user?.role !== "admin") || []).map(profile => (
           <div key={profile.email}>
             <input
               type="radio"
