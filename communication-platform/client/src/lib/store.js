@@ -121,11 +121,11 @@ export const useMessageStore = create((set) => ({
 
     // Make request to api, sends the message of the user
     const response = await fetch("http://localhost:8000/predict/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: newMessage })
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: newMessage })
     });
 
     let prediction = null;
@@ -135,13 +135,13 @@ export const useMessageStore = create((set) => ({
       prediction = await response.json();
     } else {
       console.error("Error:", response.statusText);
-    }    
-    
+    }
+
     let filteredMessage = newMessage;
 
     // Check if message was deemed toxic by model
     if(prediction.response === "toxic") {
-      filteredMessage = "Message was deleted by auto-moderator"
+      filteredMessage = "Message was deleted by auto-moderator";
     }
 
     // Set up new message object
