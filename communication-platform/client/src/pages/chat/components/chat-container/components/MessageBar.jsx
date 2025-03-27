@@ -30,6 +30,7 @@ const MessageBar = ({ email }) => {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       if (e.shiftKey) {
+        e.preventDefault();
         setMessage((prev) => prev + "\n"); // Shift + Enter for a new line
       } else {
         e.preventDefault(); // Prevents default enter behavior
