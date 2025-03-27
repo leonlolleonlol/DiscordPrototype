@@ -36,6 +36,16 @@ const MessageContainer = ({ messages, email }) => {
               >
                 <p className="text-xs text-gray-400">{msg.senderId || "N/A"}</p>
                 <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+                <p className="text-xs text-gray-400 bottom-0 left-0 pt-1">
+                  {new Date(msg.sentAt).toLocaleString("en-us", {
+                    year: "2-digit",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true
+                  })}
+                </p>
 
                 {/* Trash Icon - Only shows when message is right-clicked */}
                 {selectedMessage === index &&userData.role === "admin"&& (
