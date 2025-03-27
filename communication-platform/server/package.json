@@ -5,7 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \"**/*.js\"",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "py_setup": "python -m venv .venv && .venv\\Scripts\\python.exe -m pip install -r requirements.txt",
+    "py_run": ".venv\\Scripts\\python.exe -m fastapi dev api.py"
   },
   "keywords": [],
   "type": "module",

@@ -119,14 +119,41 @@ export const useMessageStore = create((set) => ({
   handleNewMessage: async (newMessage, senderEmail, direction, roomId) => {
     console.log("handleNewMessage called:", { newMessage, senderEmail, roomId });
 
+    // Make request to api, sends the message of the user
+    const response = await fetch("http://localhost:8000/predict/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: newMessage })
+    });
+
+    let prediction = null;
+
+    // Check for valid response
+    if (response.ok) {
+      prediction = await response.json();
+    } else {
+      console.error("Error:", response.statusText);
+    }    
+    
+    let filteredMessage = newMessage;
+
+    // Check if message was deemed toxic by model
+    if(prediction.response === "toxic") {
+      filteredMessage = "Message was deleted by auto-moderator"
+    }
+
+    // Set up new message object
     const createMessage = {
       roomId: roomId,
       senderId: senderEmail,
-      text: newMessage,
+      text: filteredMessage,
       direction: direction,
       createdAt: new Date().toISOString()
     };
 
+    // Update message store
     set((state) => ({ messages: [...state.messages, createMessage] }));
 
     if (direction === "sender") {
