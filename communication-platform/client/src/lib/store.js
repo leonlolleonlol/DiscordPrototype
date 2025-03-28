@@ -123,6 +123,14 @@ export const useMessageStore = create((set) => ({
       roomId: roomId,
       senderId: senderEmail,
       text: newMessage,
+      sentAt: new Date().toLocaleString("en-us", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }),
       direction: direction,
       createdAt: new Date().toISOString()
     };
