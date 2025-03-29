@@ -1,9 +1,9 @@
-import { create } from "zustand";
 import { io } from "socket.io-client";
-import { saveNewMessageToDB, deleteMessageFromDB, fetchMessagesFromDB, deleteAllMessagesOfDeletedChatRoom } from "./apiUtils/messageService.js";
-import { fetchChatRoomsFromDB, saveNewChatRoomToDB, deleteChatRoomFromDB } from "./apiUtils/chatRoomServices.js";
-import { clientRequest } from "./utils";
 import { toast } from "sonner";
+import { create } from "zustand";
+import { deleteChatRoomFromDB, fetchChatRoomsFromDB, saveNewChatRoomToDB } from "./apiUtils/chatRoomServices.js";
+import { deleteAllMessagesOfDeletedChatRoom, deleteMessageFromDB, fetchMessagesFromDB, saveNewMessageToDB } from "./apiUtils/messageService.js";
+import { clientRequest } from "./utils";
 
 export const useUserStore = create(set => ({
   userData: null,
@@ -31,7 +31,7 @@ export const useProfileQueryStore = create(set => {
         } catch (err) {
           filtered = undefined;
           toast.error("No users were found");
-          console.log(err.message);
+          console.error("Error querying email: ", err.message);
         }
 
         set({ profiles: filtered });
@@ -39,6 +39,16 @@ export const useProfileQueryStore = create(set => {
     },
 
     clearPossibleEmails: () => set({ profiles: [] }),
+    userToAdmin: async (email) => {
+      try {
+        const resp = await clientRequest.post("backend-api/userToAdmin", { email });
+        console.log("User updated to admin:", resp.data);
+        return resp.data;
+      } catch (err) {
+        console.error("Error updating user credentials:", err);
+        return false;
+      }
+    }
   };
 });
 
