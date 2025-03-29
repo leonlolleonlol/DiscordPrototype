@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { deleteChatRoomFromDB, fetchChatRoomsFromDB, saveNewChatRoomToDB } from "./apiUtils/chatRoomServices.js";
@@ -31,9 +31,10 @@ export const useProfileQueryStore = create(set => {
         } catch (err) {
           filtered = undefined;
           toast.error("No users were found");
+          console.error("Error querying email: ", err.message);
         }
 
-        set({ profiles: filtered })
+        set({ profiles: filtered });
       }, TIMEOUT);
     },
 
@@ -48,7 +49,7 @@ export const useProfileQueryStore = create(set => {
         return false;
       }
     }
-  }
+  };
 });
 
 export const useSocketStore = create((set, get) => ({
@@ -74,7 +75,7 @@ export const useSocketStore = create((set, get) => ({
       transports: ["websocket"], // Use WebSockets directly
     });
 
-    socketInstance.emit('join-room', roomId);
+    socketInstance.emit("join-room", roomId);
 
     // Avoid duplicate listeners
     socketInstance.off("receive-message");
@@ -91,7 +92,7 @@ export const useSocketStore = create((set, get) => ({
     const socket = get().socket;
     if (socket) {
       socket.disconnect();
-      console.log("socket disconnected")
+      console.log("socket disconnected");
       set({ socket: null });
     }
   },
@@ -106,7 +107,7 @@ export const useSocketStore = create((set, get) => ({
   },
 }));
 
-export const useMessageStore = create((set, get) => ({
+export const useMessageStore = create((set) => ({
   messages: [],
 
   // Fetch messages from the database when connecting to a chat
@@ -166,7 +167,7 @@ export const useMessageStore = create((set, get) => ({
     // Delete the message from the database
     try {
       await deleteMessageFromDB(messageId);
-      
+
       // Remove the message from the messages state
       set((state) => ({
         messages: state.messages.filter((msg) => msg._id !== messageId),
@@ -194,7 +195,7 @@ export const useMessageStore = create((set, get) => ({
 
       console.log("Deleted all messages from database successfully");
     } catch (error) {
-      console.error("Failed to delete all messages from chat room:", error)
+      console.error("Failed to delete all messages from chat room:", error);
     }
   }
 }));
@@ -259,7 +260,7 @@ export const useChatRoomStore = create((set, get) => ({
 
   // Method to handle creating a new TC Room
   handleCreateTCRoom: async (name, members, createdBy) => {
-    console.log("handleCreateTCRoom called: ", { name, members, createdBy })
+    console.log("handleCreateTCRoom called: ", { name, members, createdBy });
     const newTCRoom = { type: "textchannel", name, members, createdBy, createdAt: new Date().toISOString() };
 
     newTCRoom.serverId = `${name}-${newTCRoom.createdAt}`;
