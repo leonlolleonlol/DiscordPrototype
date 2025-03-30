@@ -41,5 +41,5 @@ def load_model():
     """
     Load the toxicity model.
     """
-    model_path = "path_to_your_model_folder\distilbert_final_model"
+    model_path = "path_to_your_model_folder\toxicity_final_model"
     return ToxicityModel(model_path)
