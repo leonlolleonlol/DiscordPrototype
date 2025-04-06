@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore, useUserStore } from "@/lib/store";
+import Avatar from "@/assets/avatars.png";
 
 const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const { connectSocket } = useSocketStore();
@@ -234,6 +235,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
           </button>
         )}
 
+
         {/* DM Modal */}
         {isDMModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
@@ -394,14 +396,40 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
           </div>
         )}
       </div>
-      <button
-        className="bottom-0 left-0 w-full bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 cursor-pointer"
-        onClick={signOut}
-      >
-        Sign-out
-      </button>
+
+
+
+
+      <div className="p-4 border-t border-[#2f303b] flex flex-col items-start space-y-2">
+        <div className="flex items-center space-x-4">
+          <div
+            className="w-[54px] h-[54px] rounded-full border-2 border-purple-500 shadow bg-no-repeat"
+            style={{
+              backgroundImage: `url(${Avatar})`,
+              backgroundPosition: `-${(userData?.avatar - 1) * 56}px 0px`,
+              backgroundSize: "336px 56px",
+            }}
+          />
+          <div className="text-white">
+            <p className="text-sm font-semibold">
+              {userData?.firstname} {userData?.lastname}
+            </p>
+          </div>
+        </div>
+
+        <button
+          className="w-full bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 cursor-pointer"
+          onClick={signOut}
+        >
+    Sign-out
+        </button>
+      </div>
     </div>
+
+
+
   );
+
 };
 
 export default ContactsContainer;
