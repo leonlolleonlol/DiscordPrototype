@@ -15,12 +15,12 @@ const MessageBar = ({ email }) => {
     }
   }, [message]); // Recalculate height on message change
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message.trim() !== "") {
-      handleNewMessage(message, email, "sender", currentRoom); // Pass message to ChatContainer. Updates the message immediately for the sender (sending chat update)
+      const messageToSend = await handleNewMessage(message, email, "sender", currentRoom); // Pass message to ChatContainer. Updates the message immediately for the sender (sending chat update)
 
       if (socket) {
-        sendMessage(message, email, currentRoom);  // Sends private message to server if socket exists
+        sendMessage(messageToSend);  // Sends private message to server if socket exists
       }
 
       setMessage(""); // Clear input after sending

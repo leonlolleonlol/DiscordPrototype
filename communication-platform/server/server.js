@@ -50,15 +50,36 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log(`SOCKET ID -> ${socket.id} : CONNECTED`);
 
-  socket.on("send-message", (msg, email, roomId) => {
-    console.log(`Message from ${email}, to ${roomId}: ${msg}`);
-    socket.to(roomId).emit("receive-message", msg, email);
+  socket.on("send-message", (messageToSend, email) => {
+    // console.log("Inside socket server:", messageToSend);
+    console.log(`Message from ${messageToSend.senderId}, to ${messageToSend.roomId}: ${messageToSend.text}`);
+    socket.to(messageToSend.roomId).emit("receive-message", messageToSend, email);
   });
 
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
     console.log(`Socket ${socket.id} -> Room ${roomId}`);
   });
+
+  socket.on("leave-room", (roomId) => {
+    socket.leave(roomId);
+    console.log(`Socket ${socket.id} left Room ${roomId}`);
+  });
+
+  socket.on("delete-message", (messageId, roomId) => {
+    console.log(`Message ${messageId} deleted from room ${roomId}`);
+    socket.to(roomId).emit("receive-delete-message", messageId);
+  });
+
+  socket.on("delete-textchannel", (roomId, roomName, deleterEmail) => {
+    console.log(`Room ${roomId} deleted by ${deleterEmail}`);
+    io.emit("receive-delete-textchannel", roomId, roomName, deleterEmail);
+  });
+
+  socket.on("create-textchannel", (roomToSend) => {
+    console.log(`Room ${roomToSend._id} created by ${roomToSend.createBy}`);
+    io.emit("receive-create-textchannel", roomToSend);
+  })
 
   // Send the socket ID back to the client
   socket.emit("assign-socket-id", socket.id);

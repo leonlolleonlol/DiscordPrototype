@@ -6,11 +6,10 @@ import { toast } from "sonner";
 import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore, useUserStore } from "@/lib/store";
 
 const ContactsContainer = ({ userData, setSelectedRoom }) => {
-  const { connectSocket } = useSocketStore();
-  const { handleNewMessage, handleDeleteAllMessagesFromChatRoom } = useMessageStore();
+  const { socket, connectToRoom, deleteTCRoom, createTCRoom} = useSocketStore();
+  const { handleReceiveMessage, deleteMessageFromStore, handleDeleteAllMessagesFromChatRoom } = useMessageStore();
   const { dmRooms, tcRooms, handleCreateDMRoom, verifyDuplicateDM, handleCreateTCRoom, handleDeleteTCRoom } = useChatRoomStore();
   const { profiles, fetchPossibleEmails, clearPossibleEmails } = useProfileQueryStore();
-  const socketUrl = import.meta.env.VITE_SERVER_URL;
 
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
   const [isGroupsOpen, setIsGroupsOpen] = useState(false);
@@ -25,10 +24,12 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const navigate = useNavigate();
   const { setUserData } = useUserStore();
 
+  const roomCallbacks = {onMessageReceived: handleReceiveMessage, onMessageDeleted:  deleteMessageFromStore};
+
   const handleRoomClick = (room) => {
     console.log(`Connecting to room: ${room._id}`);
 
-    connectSocket(socketUrl, handleNewMessage, room._id); // Connect to room via WebSockets
+    connectToRoom(roomCallbacks, room._id); // Connect to room via WebSockets
     setSelectedRoom(room._id); // Update the selected room for `ChatContainer`
   };
 
@@ -54,12 +55,14 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
     console.log(selectedMembers);
     try {
       const members = [...selectedMembers, userData.email];
-      await handleCreateTCRoom(groupName, members, userData.email);
+      const roomToSend = await handleCreateTCRoom(groupName, members, userData.email);
+
+      if (socket){
+        createTCRoom(roomToSend);
+      }
     } catch (err) {
       console.log("Something went wrong with your request: " + err.message);
     }
-
-
     clearGcQuery();
   };
   const clearGcQuery = () => {
@@ -112,6 +115,16 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
     await handleSignout();
     setUserData(undefined); // clear existing user data from the store'
     navigate("/auth");
+  };
+
+  const handleDeleteRoom = async(roomId, roomName, deleterEmail) => {
+    await handleDeleteAllMessagesFromChatRoom(roomId);  // Function to delete messages from room
+    await handleDeleteTCRoom(roomId);   // Function to delete textchannel
+
+    // Emit the channel deletion to server
+    if (socket){
+      deleteTCRoom(roomId, roomName, deleterEmail); 
+    }
   };
 
   return (
@@ -176,8 +189,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
                       className="text-red-500 hover:text-red-900 pr-2"
                       onClick={(e) => {
                         e.stopPropagation(); // Prevents clicking the delete button from triggering room selection
-                        handleDeleteAllMessagesFromChatRoom(room._id);
-                        handleDeleteTCRoom(room._id);
+                        handleDeleteRoom(room._id, room.name, userData.email);
                       }}
                     >
                       <Trash2 size={16} />
