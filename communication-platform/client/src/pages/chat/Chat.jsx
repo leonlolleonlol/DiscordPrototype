@@ -65,7 +65,7 @@ const Chat = () => {
     setTimeout(() => {
       setShowCreateRoom(false);
     }, 12000);
-  }
+  };
 
   const globalCallbacks = {
     deleteAllMessagesFromStore,

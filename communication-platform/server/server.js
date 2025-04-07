@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
   socket.on("create-textchannel", (roomToSend) => {
     console.log(`Room ${roomToSend._id} created by ${roomToSend.createBy}`);
     io.emit("receive-create-textchannel", roomToSend);
-  })
+  });
 
   // Send the socket ID back to the client
   socket.emit("assign-socket-id", socket.id);

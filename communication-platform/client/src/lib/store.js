@@ -1,9 +1,9 @@
-import { create } from "zustand";
 import { io } from "socket.io-client";
-import { saveNewMessageToDB, deleteMessageFromDB, fetchMessagesFromDB, deleteAllMessagesOfDeletedChatRoom } from "./apiUtils/messageService.js";
-import { fetchChatRoomsFromDB, saveNewChatRoomToDB, deleteChatRoomFromDB } from "./apiUtils/chatRoomServices.js";
-import { clientRequest } from "./utils";
 import { toast } from "sonner";
+import { create } from "zustand";
+import { deleteChatRoomFromDB, fetchChatRoomsFromDB, saveNewChatRoomToDB } from "./apiUtils/chatRoomServices.js";
+import { deleteAllMessagesOfDeletedChatRoom, deleteMessageFromDB, fetchMessagesFromDB, saveNewMessageToDB } from "./apiUtils/messageService.js";
+import { clientRequest } from "./utils";
 
 export const useUserStore = create(set => ({
   userData: null,
@@ -31,7 +31,7 @@ export const useProfileQueryStore = create(set => {
         } catch (err) {
           filtered = undefined;
           toast.error("No users were found");
-          console.log(err.message);
+          console.error("Error querying email: ", err.message);
         }
 
         set({ profiles: filtered });
@@ -39,6 +39,16 @@ export const useProfileQueryStore = create(set => {
     },
 
     clearPossibleEmails: () => set({ profiles: [] }),
+    userToAdmin: async (email) => {
+      try {
+        const resp = await clientRequest.post("backend-api/userToAdmin", { email });
+        console.log("User updated to admin:", resp.data);
+        return resp.data;
+      } catch (err) {
+        console.error("Error updating user credentials:", err);
+        return false;
+      }
+    }
   };
 });
 
@@ -70,7 +80,7 @@ export const useSocketStore = create((set, get) => ({
         const currentRoom = get().currentRoom;
         globalCallbacks.deleteAllMessagesFromStore();
         socketInstance.emit("leave-room", currentRoom);
-        set({ currentRoom: null })
+        set({ currentRoom: null });
       }
 
       // Delete the room from the store
@@ -80,7 +90,7 @@ export const useSocketStore = create((set, get) => ({
 
     socketInstance.off("receive-create-textchannel");
     socketInstance.on("receive-create-textchannel", (newRoomReceived) => {
-     
+
       const userEmail = useUserStore.getState().userData?.email;
       if (!newRoomReceived.members.includes(userEmail)) return;
 
@@ -209,6 +219,14 @@ export const useMessageStore = create((set, get) => ({
       roomId: roomId,
       senderId: senderEmail,
       text: newMessage,
+      sentAt: new Date().toLocaleString("en-us", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }),
       direction: direction,
       createdAt: new Date().toISOString()
     };
@@ -237,7 +255,7 @@ export const useMessageStore = create((set, get) => ({
       return;
     }
 
-    // Delete the message from the database. 
+    // Delete the message from the database.
     try {
       await deleteMessageFromDB(messageId);
 
