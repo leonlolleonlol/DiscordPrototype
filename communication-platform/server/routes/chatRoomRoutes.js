@@ -62,7 +62,7 @@ router.get("/chatrooms/:email", async (req, res) => {
     const chatRooms = await chatRoomModel.find({ members: email });
 
     // Debugging: Log data to see what is returned from the DB
-    console.log(`Chat rooms for ${email}:`, chatRooms);
+    // console.log(`Chat rooms for ${email}:`, chatRooms);
 
     res.status(200).json(chatRooms);
   } catch (error) {

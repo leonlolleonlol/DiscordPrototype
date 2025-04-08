@@ -7,12 +7,11 @@ import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore
 import Avatar from "@/assets/avatars.png";
 
 const ContactsContainer = ({ userData, setSelectedRoom }) => {
-  const { connectSocket } = useSocketStore();
-  const { handleNewMessage, handleDeleteAllMessagesFromChatRoom } = useMessageStore();
+  const { socket, connectToRoom, deleteTCRoom, createTCRoom } = useSocketStore();
+  const { handleReceiveMessage, deleteMessageFromStore, handleDeleteAllMessagesFromChatRoom } = useMessageStore();
   const { dmRooms, tcRooms, handleCreateDMRoom, verifyDuplicateDM, handleCreateTCRoom, handleDeleteTCRoom } = useChatRoomStore();
-  const { profiles, fetchPossibleEmails, clearPossibleEmails, userToAdmin } = useProfileQueryStore();
 
-  const socketUrl = import.meta.env.VITE_SERVER_URL;
+  const { profiles, fetchPossibleEmails, clearPossibleEmails, userToAdmin } = useProfileQueryStore();
 
   const [isFriendsOpen, setIsFriendsOpen] = useState(false);
   const [isGroupsOpen, setIsGroupsOpen] = useState(false);
@@ -30,10 +29,14 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const navigate = useNavigate();
   const { setUserData } = useUserStore();
 
+  const roomCallbacks = { onMessageReceived: handleReceiveMessage, onMessageDeleted: deleteMessageFromStore };
+
   const handleRoomClick = (room) => {
     console.log(`Connecting to room: ${room._id}`);
-    connectSocket(socketUrl, handleNewMessage, room._id);
-    setSelectedRoom(room._id);
+
+    connectToRoom(roomCallbacks, room._id); // Connect to room via WebSockets
+    setSelectedRoom(room._id); // Update the selected room for `ChatContainer`
+
   };
 
   const handleGroupNameChange = (e) => setGroupName(e.target.value);
@@ -56,7 +59,11 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
     console.log(selectedMembers);
     try {
       const members = [...selectedMembers, userData.email];
-      await handleCreateTCRoom(groupName, members, userData.email);
+      const roomToSend = await handleCreateTCRoom(groupName, members, userData.email);
+
+      if (socket) {
+        createTCRoom(roomToSend);
+      }
     } catch (err) {
       console.log("Something went wrong with your request: " + err.message);
     }
@@ -134,6 +141,16 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
     navigate("/auth");
   };
 
+  const handleDeleteRoom = async (roomId, roomName, deleterEmail) => {
+    await handleDeleteAllMessagesFromChatRoom(roomId);  // Function to delete messages from room
+    await handleDeleteTCRoom(roomId);   // Function to delete textchannel
+
+    // Emit the channel deletion to server
+    if (socket) {
+      deleteTCRoom(roomId, roomName, deleterEmail);
+    }
+  };
+
   return (
     <div className="flex flex-col md:w-[20vw] lg:w-[20vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] h-screen">
       <div className="flex-1 overflow-y-auto p-2">
@@ -201,8 +218,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
                         className="text-red-500 hover:text-red-900 pr-2"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteAllMessagesFromChatRoom(room._id);
-                          handleDeleteTCRoom(room._id);
+                          handleDeleteRoom(room._id, room.name, userData.email);
                         }}
                       >
                         <Trash2 size={16} />
@@ -228,7 +244,7 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
         {/* Admin Creation (Admin Only) */}
         {userData?.role === "admin" && (
           <button
-            className="w-full bg-purple-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
+            className="w-full bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer"
             onClick={() => SetIscreateAdminOpen(true)}
           >
             + Add a new Admin
@@ -396,10 +412,6 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
           </div>
         )}
       </div>
-
-
-
-
       <div className="p-4 border-t border-[#2f303b] flex flex-col items-start space-y-2">
         <div className="flex items-center space-x-4">
           <div
@@ -421,15 +433,11 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
           className="w-full bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 cursor-pointer"
           onClick={signOut}
         >
-    Sign-out
+          Sign-out
         </button>
       </div>
     </div>
-
-
-
   );
-
 };
 
 export default ContactsContainer;
