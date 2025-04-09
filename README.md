@@ -55,7 +55,13 @@ TBD
 
 ## Installation & Setup (TBD)
 
-- Instructions for setting up the development environment will be provided once technologies are finalized.
+1. Download the repostiory.
+2. Navigate to to the client directory in one terminal and the server directory in two other terminals.
+3. Run the terminal command "npm i" in the client directory and one of the server directories.
+4. Place the both .env files in the respeective file directory (client or server).
+5. Run the terminal commands "npm run dev" in the client directory and one of the server directories.
+6. Run the trerminal command "npm run py_setup" in one of the other server directory, then run "npm run py_run".
+7. Navigate to "http://localhost:5173/" in your browser to run the project locally.
 
 ## Contribution Guidelines
 
