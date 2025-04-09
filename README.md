@@ -46,7 +46,7 @@ This project aims to develop a dynamic communication platform that facilitates s
 ### 4. Additional Feature: AI-Powered Enhancement
 
 - **Auto-Moderation:**
-  - AI will detect and flag inappropriate or harmful content for admins to review.
+  - AI will detect and flag inappropriate or harmful content for removal.
 
 ## Technologies & Techniques
 TBD
