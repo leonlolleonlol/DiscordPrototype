@@ -43,10 +43,8 @@ This project aims to develop a dynamic communication platform that facilitates s
   - Can join and participate in channels.
   - Can send and view messages.
 
-### 4. Additional Feature: AI-Powered Enhancements
+### 4. Additional Feature: AI-Powered Enhancement
 
-- **Summarization of Missed Messages:**
-  - AI will generate concise summaries of missed messages for users.
 - **Auto-Moderation:**
   - AI will detect and flag inappropriate or harmful content for admins to review.
 
