@@ -20,24 +20,20 @@ This project aims to develop a dynamic communication platform that facilitates s
 
 ### 1. Text Channels for Group Communication
 
-- Users can create, join and leave a predefined set of channels (e.g., "General," "Project Help," "Social").
+- Users can join and leave channels.
 - Messages sent in a channel are visible to all users in that channel.
-- Users can post, edit, and delete their messages.
-- Users can mention/tag other users in the channel.
+- Users can post their messages.
 
 ### 2. Direct Messaging Between Users
 
 - Users can initiate one-on-one conversations with other members.
 - Private messages are only visible to the participants.
-- Users can send text, images, and other media files.
 
 ### 3. Role-Based User Permissions
 
 - **Admin Role:**
   - Can create and delete group chat channels.
   - Can modify the permissions of existing users by making them into admins.
-  - Can discipline users by muting or banning them from the server.
-  - Can modify the group chat's settings (i.e. profile picture, chat name, etc.)
   - Can moderate messages by deleting inappropriate content.
 - **Member Role:**
   - Can join and participate in channels.
