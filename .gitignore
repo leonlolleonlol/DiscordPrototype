@@ -39,4 +39,4 @@ dist-ssr
 *.pyo
 
 # Big Model Files
-*.model.safetensors
+/communication-platform/server/toxicity_final_model/model.safetensors

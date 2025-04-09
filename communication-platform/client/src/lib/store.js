@@ -260,11 +260,9 @@ export const useMessageStore = create((set, get) => ({
     // Update message store
     var savedMessage = null;
     try {
-      if(!(prediction.response === "Toxic")){
-        savedMessage = await saveNewMessageToDB(createMessage);
-        console.log("Message saved to DB:", savedMessage);
-        createMessage.messageId = savedMessage._id;
-      }
+      savedMessage = await saveNewMessageToDB(createMessage);
+      console.log("Message saved to DB:", savedMessage);
+      createMessage.messageId = savedMessage._id;
     } catch (error) {
       console.error("Failed to save message:", error);
     }
