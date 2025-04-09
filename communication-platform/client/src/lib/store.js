@@ -140,7 +140,7 @@ export const useMessageStore = create((set) => ({
     let filteredMessage = newMessage;
 
     // Check if message was deemed toxic by model
-    if(prediction.response === "toxic") {
+    if(prediction.response === "Toxic") {
       filteredMessage = "Message was deleted by auto-moderator";
     }
 
@@ -158,8 +158,10 @@ export const useMessageStore = create((set) => ({
 
     if (direction === "sender") {
       try {
-        const savedMessage = await saveNewMessageToDB(createMessage);
-        console.log("Message saved to DB:", savedMessage);
+        if(!(prediction.response === "Toxic")){
+          const savedMessage = await saveNewMessageToDB(createMessage);
+          console.log("Message saved to DB:", savedMessage);
+        }
       } catch (error) {
         console.error("Failed to save message:", error);
       }
