@@ -1,9 +1,9 @@
-import { create } from "zustand";
 import { io } from "socket.io-client";
-import { saveNewMessageToDB, deleteMessageFromDB, fetchMessagesFromDB, deleteAllMessagesOfDeletedChatRoom } from "./apiUtils/messageService.js";
-import { fetchChatRoomsFromDB, saveNewChatRoomToDB, deleteChatRoomFromDB } from "./apiUtils/chatRoomServices.js";
-import { clientRequest } from "./utils";
 import { toast } from "sonner";
+import { create } from "zustand";
+import { deleteChatRoomFromDB, fetchChatRoomsFromDB, saveNewChatRoomToDB } from "./apiUtils/chatRoomServices.js";
+import { deleteAllMessagesOfDeletedChatRoom, deleteMessageFromDB, fetchMessagesFromDB, saveNewMessageToDB } from "./apiUtils/messageService.js";
+import { clientRequest } from "./utils";
 
 export const useUserStore = create(set => ({
   userData: null,
@@ -31,7 +31,7 @@ export const useProfileQueryStore = create(set => {
         } catch (err) {
           filtered = undefined;
           toast.error("No users were found");
-          console.log(err.message);
+          console.error("Error querying email: ", err.message);
         }
 
         set({ profiles: filtered });
@@ -39,6 +39,16 @@ export const useProfileQueryStore = create(set => {
     },
 
     clearPossibleEmails: () => set({ profiles: [] }),
+    userToAdmin: async (email) => {
+      try {
+        const resp = await clientRequest.post("backend-api/userToAdmin", { email });
+        console.log("User updated to admin:", resp.data);
+        return resp.data;
+      } catch (err) {
+        console.error("Error updating user credentials:", err);
+        return false;
+      }
+    }
   };
 });
 
@@ -46,34 +56,91 @@ export const useSocketStore = create((set, get) => ({
   socket: null, // Holds the socket instance
   currentRoom: null, // Holds the current room that the user is in
 
-  // Function to initialize the socket connection
-  connectSocket: (URL, onMessageReceived, roomId) => {
-
-    if (!roomId) {
-      console.error("Cannot connect to socket without roomId");
-      return;
-    }
+  // Initialize the socket once (on login)
+  initSocket: (URL, globalCallbacks) => {
     const existingSocket = get().socket;
-    const currentRoom = get().currentRoom;
-
-    if (existingSocket && roomId === currentRoom) return; // Prevent multiple connections
-
-    if (existingSocket) existingSocket.disconnect();
+    if (existingSocket) return;
 
     const socketInstance = io(URL, {
       reconnection: true, // Enable automatic reconnection
       transports: ["websocket"], // Use WebSockets directly
     });
 
-    socketInstance.emit("join-room", roomId);
+    // Global listeners (created once)
+    socketInstance.off("receive-delete-textchannel");
+    socketInstance.on("receive-delete-textchannel", (roomId, roomName, deleterEmail) => {
+      const chatRooms = useChatRoomStore.getState().chatRooms;
+      const isInChatList = chatRooms.some(r => r._id === roomId);
+      if (!isInChatList) return;
 
-    // Avoid duplicate listeners
-    socketInstance.off("receive-message");
-    socketInstance.on("receive-message", (message, email) => {
-      onMessageReceived(message, email, "receiver", roomId);
+      console.log("Received channel deleted from server", roomId);
+
+      // If the user is currently in the room that is being deleted, remove connection to room and clear messageStore
+      if (roomId === get().currentRoom) {
+        const currentRoom = get().currentRoom;
+        globalCallbacks.deleteAllMessagesFromStore();
+        socketInstance.emit("leave-room", currentRoom);
+        set({ currentRoom: null });
+      }
+
+      // Delete the room from the store
+      globalCallbacks.deleteTCRoomFromStore(roomId);
+      globalCallbacks.showRoomDeleted(roomName, deleterEmail);
+    });
+
+    socketInstance.off("receive-create-textchannel");
+    socketInstance.on("receive-create-textchannel", (newRoomReceived) => {
+
+      const userEmail = useUserStore.getState().userData?.email;
+      if (!newRoomReceived.members.includes(userEmail)) return;
+
+      if (newRoomReceived.createdBy === userEmail) return;
+      console.log("Received channel created from server", newRoomReceived);
+      globalCallbacks.addTCRoomToStore(newRoomReceived);
+      globalCallbacks.showRoomCreated(newRoomReceived.name, newRoomReceived.createdBy);
     });
 
     set({ socket: socketInstance });
+  },
+
+  // Function to initialize the socket connection
+  connectToRoom: (roomCallbacks, roomId) => {
+    if (!roomId) {
+      console.error("Cannot connect to socket without roomId");
+      return;
+    }
+    const socket = get().socket;
+    const currentRoom = get().currentRoom;
+
+    if (!socket) {
+      console.error("Socket not initialized. Call initSocket() first");
+      return;
+    }
+
+    if (roomId === currentRoom) return; // Prevent multiple connections
+
+    if (currentRoom) socket.emit("leave-room", roomId);
+
+    //Emit join event
+    socket.emit("join-room", roomId);
+
+    // Listener for receiving messages
+    socket.off("receive-message");  // Avoid duplicate listeners
+    socket.on("receive-message", (receivedMessage) => {
+      if (receivedMessage.senderId !== useUserStore.getState().userData.email) {
+        console.log("Message received from server: ", receivedMessage);
+        roomCallbacks.onMessageReceived(receivedMessage);
+      }
+    });
+
+    // Listener for deleting messages
+    socket.off("receive-delete-message");
+    socket.on("receive-delete-message", (messageId) => {
+      console.log("Deleted message received from server");
+      roomCallbacks.onMessageDeleted(messageId);
+    });
+
+    set({ socket: socket });
     set({ currentRoom: roomId });
   },
 
@@ -87,17 +154,46 @@ export const useSocketStore = create((set, get) => ({
     }
   },
 
-  // Function to send a message
-  sendMessage: (message, email, roomId) => {
+  // Function to send a message to server.
+  sendMessage: (messageToSend, email) => {
     const socket = get().socket;
     if (socket) {
-      console.log("Sending message:", { message, email, roomId });
-      socket.emit("send-message", message, email, roomId);
+      console.log("Sending message to server...");
+      socket.emit("send-message", messageToSend, email);
     }
   },
+
+  // Function to send a delete message event to server.
+  deleteMessage: (messageId, roomId) => {
+    const socket = get().socket;
+    if (socket) {
+      console.log("Sending deleted message to server...", { messageId, roomId });
+      socket.emit("delete-message", messageId, roomId);
+    }
+  },
+
+  // Function to send a deleted text channel event to server
+  deleteTCRoom: (roomId, roomName, deleterEmail) => {
+    const socket = get().socket;
+    const currentRoom = get().currentRoom;
+    if (socket) {
+      console.log("Sending deleted text channel to server...", roomId);
+      socket.emit("leave-room", currentRoom);
+      socket.emit("delete-textchannel", roomId, roomName, deleterEmail);
+    }
+  },
+
+  createTCRoom: (roomToSend) => {
+    const socket = get().socket;
+
+    if (socket) {
+      console.log("Sending new text channel to server...", roomToSend._id);
+      socket.emit("create-textchannel", roomToSend);
+    }
+  }
 }));
 
-export const useMessageStore = create((set) => ({
+export const useMessageStore = create((set, get) => ({
   messages: [],
 
   // Fetch messages from the database when connecting to a chat
@@ -149,45 +245,63 @@ export const useMessageStore = create((set) => ({
       roomId: roomId,
       senderId: senderEmail,
       text: filteredMessage,
+      sentAt: new Date().toLocaleString("en-us", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }),
       direction: direction,
       createdAt: new Date().toISOString()
     };
 
     // Update message store
-    set((state) => ({ messages: [...state.messages, createMessage] }));
-
-    if (direction === "sender") {
-      try {
-        if(!(prediction.response === "Toxic")){
-          const savedMessage = await saveNewMessageToDB(createMessage);
-          console.log("Message saved to DB:", savedMessage);
-        }
-      } catch (error) {
-        console.error("Failed to save message:", error);
+    var savedMessage = null;
+    try {
+      if(!(prediction.response === "Toxic")){
+        savedMessage = await saveNewMessageToDB(createMessage);
+        console.log("Message saved to DB:", savedMessage);
+        createMessage.messageId = savedMessage._id;
       }
+    } catch (error) {
+      console.error("Failed to save message:", error);
     }
+
+    set((state) => ({ messages: [...state.messages, savedMessage] }));
+    return savedMessage;
   },
 
-  //Function to delete a message
+  handleReceiveMessage: async (receivedMessage) => {
+    set((state) => ({ messages: [...state.messages, receivedMessage] }));
+  },
+
+  // Function called by admin who deleted the message.
   handleDeleteMessage: async (messageId) => {
     if (!messageId) {
       console.error("Cannot fetch messages without a valid messageId");
       return;
     }
 
-    // Delete the message from the database
+    // Delete the message from the database.
     try {
       await deleteMessageFromDB(messageId);
 
       // Remove the message from the messages state
-      set((state) => ({
-        messages: state.messages.filter((msg) => msg._id !== messageId),
-      }));
+      get().deleteMessageFromStore(messageId);
 
       console.log("Deleted message from database successfully.", messageId);
     } catch (error) {
       console.error("Failed to delete message:", error);
     };
+  },
+
+  deleteMessageFromStore: async (messageId) => {
+    // Remove the message from the messages state
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg._id !== messageId),
+    }));
   },
 
   handleDeleteAllMessagesFromChatRoom: async (roomId) => {
@@ -197,9 +311,7 @@ export const useMessageStore = create((set) => ({
       return;
     }
 
-    set((state) => ({
-      messages: state.messages.filter((msg) => msg.roomId !== roomId),
-    }));
+    get().deleteAllMessagesFromStore();
 
     try {
       await deleteAllMessagesOfDeletedChatRoom(roomId);
@@ -208,6 +320,12 @@ export const useMessageStore = create((set) => ({
     } catch (error) {
       console.error("Failed to delete all messages from chat room:", error);
     }
+  },
+
+  deleteAllMessagesFromStore: async () => {
+    set((state) => ({
+      messages: state.messages = []
+    }));
   }
 }));
 
@@ -280,20 +398,24 @@ export const useChatRoomStore = create((set, get) => ({
       const savedTCRoom = await saveNewChatRoomToDB(newTCRoom);
       console.log("New TC Room saved to DB:", savedTCRoom);
 
-      set((state) => ({ chatRooms: [...state.chatRooms, savedTCRoom] }));
-      set((state) => ({ tcRooms: [...state.tcRooms, savedTCRoom] }));
+      get().addTCRoomToStore(savedTCRoom);
 
+      return savedTCRoom;
     } catch (error) {
       console.error("Failed to create new TC room: ", error);
     }
   },
 
+  addTCRoomToStore: async (roomToAdd) => {
+    set((state) => ({ chatRooms: [...state.chatRooms, roomToAdd] }));
+    set((state) => ({ tcRooms: [...state.tcRooms, roomToAdd] }));
+
+  },
+
   handleDeleteTCRoom: async (roomId) => {
     console.log("handleDeleteTCRoom called; passing: ", roomId);
 
-    set((state) => ({
-      chatRooms: state.chatRooms.filter((room) => room._id !== roomId),
-    }));
+    get().deleteTCRoomFromStore(roomId);
 
     try {
       const status = await deleteChatRoomFromDB(roomId);
@@ -305,5 +427,11 @@ export const useChatRoomStore = create((set, get) => ({
     } catch (error) {
       console.error("Failed to delete chat room:", error);
     };
+  },
+
+  deleteTCRoomFromStore: async (roomId) => {
+    set((state) => ({
+      chatRooms: state.chatRooms.filter((room) => room._id !== roomId),
+    }));
   }
 }));

@@ -23,11 +23,32 @@ router.post("/email-query", async (req, res) => {
         return {
           email: user.email,
           firstName: user.firstname,
-          lastName: user.lastname
+          lastName: user.lastname,
+          role: user.role,
         };
       });
 
     res.status(200).json({ profiles });
+  } catch (error) {
+    console.error("Error fetching chat rooms:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+router.post("/userToAdmin", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userModel.findOneAndUpdate(
+      { email },
+      { role: "admin" },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User role updated to admin", user });
   } catch (error) {
     console.error("Error fetching chat rooms:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -41,7 +62,7 @@ router.get("/chatrooms/:email", async (req, res) => {
     const chatRooms = await chatRoomModel.find({ members: email });
 
     // Debugging: Log data to see what is returned from the DB
-    console.log(`Chat rooms for ${email}:`, chatRooms);
+    // console.log(`Chat rooms for ${email}:`, chatRooms);
 
     res.status(200).json(chatRooms);
   } catch (error) {
