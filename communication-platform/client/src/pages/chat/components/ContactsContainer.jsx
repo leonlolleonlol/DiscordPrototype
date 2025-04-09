@@ -437,7 +437,7 @@ const ContactsContainer = ({ setSelectedRoom }) => {
           />
           <div className="text-white">
             <p className="text-sm font-semibold">
-              {userData?.firstname } {userData?.lastname}            </p>
+              {userData?.firstName } {userData?.lastname}            </p>
           </div>
         </div>
 
