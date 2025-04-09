@@ -11,7 +11,6 @@ import avatar_4 from "@/assets/avatar_4.png";
 import avatar_5 from "@/assets/avatar_5.png";
 import avatar_6 from "@/assets/avatar_6.png";
 
-
 const avatarMap = {
   1: avatar_1,
   2: avatar_2,
@@ -21,7 +20,7 @@ const avatarMap = {
   6: avatar_6,
 };
 
-const ContactsContainer = ({ setSelectedRoom }) => {
+const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const { socket, connectToRoom, deleteTCRoom, createTCRoom } = useSocketStore();
   const { handleReceiveMessage, deleteMessageFromStore, handleDeleteAllMessagesFromChatRoom } = useMessageStore();
   const { dmRooms, tcRooms, handleCreateDMRoom, verifyDuplicateDM, handleCreateTCRoom, handleDeleteTCRoom } = useChatRoomStore();
@@ -43,7 +42,7 @@ const ContactsContainer = ({ setSelectedRoom }) => {
 
   const navigate = useNavigate();
   const { setUserData } = useUserStore();
-  const userData = useUserStore((state) => state.userData); // reactive selector
+
   const roomCallbacks = { onMessageReceived: handleReceiveMessage, onMessageDeleted: deleteMessageFromStore };
 
   const handleRoomClick = (room) => {
@@ -427,7 +426,6 @@ const ContactsContainer = ({ setSelectedRoom }) => {
           </div>
         )}
       </div>
-
       <div className="p-4 border-t border-[#2f303b] flex flex-col items-start space-y-2">
         <div className="flex items-center space-x-4">
           <img
@@ -437,7 +435,7 @@ const ContactsContainer = ({ setSelectedRoom }) => {
           />
           <div className="text-white">
             <p className="text-sm font-semibold">
-              {userData?.firstName } {userData?.lastname}            </p>
+              {userData?.firstName } {userData?.lastName}            </p>
           </div>
         </div>
 
