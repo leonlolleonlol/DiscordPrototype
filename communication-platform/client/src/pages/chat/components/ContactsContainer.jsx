@@ -4,7 +4,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useChatRoomStore, useMessageStore, useProfileQueryStore, useSocketStore, useUserStore } from "@/lib/store";
-import Avatar from "@/assets/avatars.png";
+import avatar_1 from "@/assets/avatar_1.png";
+import avatar_2 from "@/assets/avatar_2.png";
+import avatar_3 from "@/assets/avatar_3.png";
+import avatar_4 from "@/assets/avatar_4.png";
+import avatar_5 from "@/assets/avatar_5.png";
+import avatar_6 from "@/assets/avatar_6.png";
+
+const avatarMap = {
+  1: avatar_1,
+  2: avatar_2,
+  3: avatar_3,
+  4: avatar_4,
+  5: avatar_5,
+  6: avatar_6,
+};
 
 const ContactsContainer = ({ userData, setSelectedRoom }) => {
   const { socket, connectToRoom, deleteTCRoom, createTCRoom } = useSocketStore();
@@ -414,18 +428,14 @@ const ContactsContainer = ({ userData, setSelectedRoom }) => {
       </div>
       <div className="p-4 border-t border-[#2f303b] flex flex-col items-start space-y-2">
         <div className="flex items-center space-x-4">
-          <div
-            className="w-[54px] h-[54px] rounded-full border-2 border-purple-500 shadow bg-no-repeat"
-            style={{
-              backgroundImage: `url(${Avatar})`,
-              backgroundPosition: `-${(userData?.avatar - 1) * 56}px 0px`,
-              backgroundSize: "336px 56px",
-            }}
+          <img
+            src={avatarMap[userData?.avatar]}
+            alt="Avatar"
+            className="w-[54px] h-[54px] rounded-full border-2 border-purple-500 shadow object-cover"
           />
           <div className="text-white">
             <p className="text-sm font-semibold">
-              {userData?.firstname} {userData?.lastname}
-            </p>
+              {userData?.firstName } {userData?.lastName}            </p>
           </div>
         </div>
 

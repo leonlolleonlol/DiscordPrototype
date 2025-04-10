@@ -47,6 +47,7 @@ const App = () => {
           element={<EntryRoute><Auth /></EntryRoute>}
         />
         <Route
+
           path="/chat"
           element={<AuthRequiredRoute><Chat /></AuthRequiredRoute>}
         />
