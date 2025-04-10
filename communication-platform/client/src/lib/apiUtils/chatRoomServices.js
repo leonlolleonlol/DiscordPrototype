@@ -33,6 +33,25 @@ export const saveNewChatRoomToDB = async (roomToSave) => {
   }
 };
 
+export const leaveGroupChat = async (roomToLeave, userEmail) => {
+  try {
+    console.log("Sending data to leave group chat:", roomToLeave, userEmail);
+    const response = await fetch("http://localhost:3000/backend-api/chatrooms/leave", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId: roomToLeave, userEmail })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to leave group chat. Server responded with: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteChatRoomFromDB = async (roomId) => {
   try {
     const response = await fetch(`http://localhost:3000/backend-api/chatrooms/delete/${roomId}`, {

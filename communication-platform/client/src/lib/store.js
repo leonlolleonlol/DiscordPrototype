@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import { toast } from "sonner";
 import { create } from "zustand";
-import { deleteChatRoomFromDB, fetchChatRoomsFromDB, saveNewChatRoomToDB } from "./apiUtils/chatRoomServices.js";
+import { deleteChatRoomFromDB, fetchChatRoomsFromDB, saveNewChatRoomToDB, leaveGroupChat } from "./apiUtils/chatRoomServices.js";
 import { deleteAllMessagesOfDeletedChatRoom, deleteMessageFromDB, fetchMessagesFromDB, saveNewMessageToDB } from "./apiUtils/messageService.js";
 import { clientRequest } from "./utils";
 
@@ -398,6 +398,19 @@ export const useChatRoomStore = create((set, get) => ({
     } catch (error) {
       console.error("Failed to delete chat room:", error);
     };
+  },
+
+  LeaveGroupChat: async (roomId, userEmail) => {
+    try {
+      await leaveGroupChat(roomId, userEmail);
+      // Remove the left group chat from the store for the current user.
+      set((state) => ({
+        chatRooms: state.chatRooms.filter((room) => room._id !== roomId)
+      }));
+      console.log(`User ${userEmail} left the group chat (Room ID: ${roomId})`);
+    } catch (error) {
+      console.error("Failed to leave group chat:", error);
+    }
   },
 
   deleteTCRoomFromStore: async (roomId) => {

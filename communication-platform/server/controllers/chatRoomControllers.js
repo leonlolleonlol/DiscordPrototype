@@ -83,3 +83,23 @@ export const deleteChatRoomById = async(req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+export const leaveChatRoom = async (req, res) => {
+  try {
+    const { roomId, userEmail } = req.body;
+
+    const chatRoom = await chatRoomModel.findById(roomId);
+
+    if (!chatRoom) {
+      return res.status(404).json({ error: "Chat room not found" });
+    }
+
+    // Remove the user from the members array
+    chatRoom.members = chatRoom.members.filter((email) => email !== userEmail);
+
+    await chatRoom.save();
+
+    return res.status(200).json({ message: "User left the chat room successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
