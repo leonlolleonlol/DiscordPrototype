@@ -215,10 +215,36 @@ export const useMessageStore = create((set, get) => ({
   handleNewMessage: async (newMessage, senderEmail, direction, roomId) => {
     console.log("handleNewMessage called:", { newMessage, senderEmail, roomId });
 
+    // Make request to api, sends the message of the user
+    const response = await fetch("http://localhost:8000/predict/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: newMessage })
+    });
+
+    let prediction = null;
+
+    // Check for valid response
+    if (response.ok) {
+      prediction = await response.json();
+    } else {
+      console.error("Error:", response.statusText);
+    }
+
+    let filteredMessage = newMessage;
+
+    // Check if message was deemed toxic by model
+    if(prediction.response === "Toxic") {
+      filteredMessage = "Message was deleted by auto-moderator";
+    }
+
+    // Set up new message object
     const createMessage = {
       roomId: roomId,
       senderId: senderEmail,
-      text: newMessage,
+      text: filteredMessage,
       sentAt: new Date().toLocaleString("en-us", {
         year: "2-digit",
         month: "2-digit",
@@ -231,6 +257,7 @@ export const useMessageStore = create((set, get) => ({
       createdAt: new Date().toISOString()
     };
 
+    // Update message store
     var savedMessage = null;
     try {
       savedMessage = await saveNewMessageToDB(createMessage);

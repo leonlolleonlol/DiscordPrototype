@@ -28,3 +28,15 @@ dist-ssr
 # Environment Variables  
 **/.env
 **/.vite
+
+
+# Python Virtual Environment
+**/.venv/
+
+# Python Cache Files
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Big Model Files
+/communication-platform/server/toxicity_final_model/model.safetensors
