@@ -124,7 +124,7 @@ const Chat = () => {
   };
 
   // Refactored handler for leaving a group chat using the axios-based API utility.
- 
+
   return (
     <div className="relative h-screen bg-gray-900 text-white flex">
       {/* Notification for deleted text channel */}
@@ -191,8 +191,8 @@ const Chat = () => {
         <ContactsContainer userData={userData} setSelectedRoom={setSelectedRoom} />
       </div>
 
-       {/* Confirmation modal for leaving group chat */}
-       {showLeaveConfirm && (
+      {/* Confirmation modal for leaving group chat */}
+      {showLeaveConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-gray-800 p-6 rounded shadow-lg">
             <h2 className="text-xl mb-4">Are you sure you want to leave the group chat?</h2>
