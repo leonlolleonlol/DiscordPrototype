@@ -49,7 +49,7 @@ TBD
 
 ## Installation & Setup (TBD)
 
-1. Download the repostiory.
+1. Download the repository.
 2. Navigate to the client directory in one terminal and the server directory in two other terminals.
 3. Run the terminal command "npm i" in the client directory and one of the server directories.
 4. Place both .env files in their respective file directory (client or server).
