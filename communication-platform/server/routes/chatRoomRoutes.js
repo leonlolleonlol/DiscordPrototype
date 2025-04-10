@@ -1,5 +1,5 @@
 import express from "express";
-import { createChatRoom, deleteChatRoomById, getChatRoomsByEmail, updateChatRoombyId } from "../controllers/chatRoomControllers.js";
+import { createChatRoom, deleteChatRoomById, getChatRoomsByEmail, updateChatRoombyId,leaveChatRoom } from "../controllers/chatRoomControllers.js";
 import userModel from "../models/user.js";
 import chatRoomModel from "../models/chatRoom.js";
 
@@ -76,5 +76,7 @@ router.post("/chatrooms/create", createChatRoom);
 router.get("/chatrooms/fetch-by-email/:email", getChatRoomsByEmail);
 router.put("/chatrooms/delete/:roomId", updateChatRoombyId);
 router.delete("/chatrooms/delete/:roomId", deleteChatRoomById);
+router.post("/chatrooms/leave", leaveChatRoom);
+
 
 export default router;
