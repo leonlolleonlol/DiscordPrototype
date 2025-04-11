@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request: # Run this workflow for ALL PRs
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          cd communication-platform/client
+          npm i
+
+      - name: Lint Front End
+        run: |
+          cd communication-platform/client
+          npm run lint
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          cd communication-platform/server
+          npm i
+
+      - name: Lint Backend
+        run: |
+          cd communication-platform/server
+          npm run lint
