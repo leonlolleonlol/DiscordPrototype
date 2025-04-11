@@ -45,9 +45,25 @@ This project aims to develop a dynamic communication platform that facilitates s
   - AI will detect and flag inappropriate or harmful content for removal.
 
 ## Technologies & Techniques
-TBD
+This project leverages a modern web development stack for a responsive, real-time, and maintainable application:
 
-## Installation & Setup (TBD)
+- **Frontend:**
+  - [React](https://reactjs.org/) – Component-based UI library  
+  - [Vite](https://vitejs.dev/) – Fast build tool and development server  
+  - [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework  
+  - [ShadCN UI](https://ui.shadcn.dev/) – Styled component library built on Radix UI and Tailwind  
+  - [Radix UI](https://www.radix-ui.com/) – Accessible UI primitives for React  
+  - [Zustand](https://zustand-demo.pmnd.rs/) – Lightweight state management  
+
+- **Backend & Real-Time:**
+  - [Socket.IO](https://socket.io/) – Real-time bi-directional communication  
+  - [MongoDB](https://www.mongodb.com/) – NoSQL database for flexible data storage  
+
+- **Networking & Data Handling:**
+  - [Axios](https://axios-http.com/) – Promise-based HTTP client for the browser and Node.js
+
+
+## Installation & Setup
 
 1. Download the repository.
 2. Navigate to the client directory in one terminal and the server directory in two other terminals.
